@@ -1,0 +1,43 @@
+---
+version: '3'
+
+services:
+
+  atmosphere:
+    build:
+      context: './atmosphere'
+    volumes:
+      - 'atmo-env:/opt/env/atmo:rw'
+      - 'sockets:/tmp:rw'
+      - './logs/celery/atmo:/var/log/celery:rw'
+      - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
+
+  troposphere:
+    build:
+      context: './troposphere'
+    volumes:
+      - 'atmo-env:/opt/env/atmo:rw'
+      - 'sockets:/tmp:rw'
+      - 'tropo:/opt/dev/troposphere:rw'
+      - './logs/celery/tropo:/var/log/celery:rw'
+    depends_on:
+      - 'atmosphere'
+
+  nginx:
+    build:
+      context: './nginx'
+    volumes:
+      - 'sockets:/tmp'
+      - 'tropo:/opt/dev/troposphere:rw'
+      - './logs/nginx:/var/log/nginx:rw'
+    depends_on:
+      - 'atmosphere'
+      - 'troposphere'
+    ports:
+      - '443:443'
+      - '80:80'
+
+volumes:
+  atmo-env:
+  sockets:
+  tropo:

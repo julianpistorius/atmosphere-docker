@@ -1,0 +1,16 @@
+- name: Configure nginx
+  hosts: full_deploy
+  roles:
+    - { role: tls-cert,
+        TLS_CREATE_SELFSIGNED: false,
+        TLS_COMMON_NAME: 'localhost' }
+    - { role: configure-nginx,
+        SERVER_URL: "{{ nginx_server_url }}",
+        SITE_SERVER_NAME: "{{ server_name }}",
+        LOCATIONS: "{{ nginx_locations }}",
+        SSL_KEY: "{{ TLS_PRIVKEY_PATH }}",
+        SSL_CERT: "{{ TLS_FULLCHAIN_PATH }}",
+        SSL_CACHAIN_CERT: "{{ TLS_CACHAIN_PATH }}",
+        TROPO_ASSETS_PATH: "{{ TROPO.COMMON.ASSETS_PATH }}",
+        FLOWER_SERVER_URL: "http://127.0.0.1:{{ FLOWER_PORT }}",
+        tags: ['nginx'] }
