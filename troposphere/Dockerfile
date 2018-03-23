@@ -18,7 +18,7 @@ RUN apt-get install -y \
     python-dev \
     sudo
 
-# Prep git repo and virtualenv; install pip requirements
+# Prep Clank git repo and virtualenv; install pip requirements
 RUN pip install --upgrade pip virtualenv
 RUN mkdir -p $CLANK_WORKSPACE
 RUN mkdir -p /root/.ssh
@@ -33,13 +33,30 @@ RUN chown -R www-data:www-data /run/uwsgi/app/
 RUN mkdir /var/log/uwsgi && touch /var/log/uwsgi/troposphere.log
 RUN chown -R www-data:www-data /var/log/uwsgi
 
-# Add variables files
-ADD atmo-local $CLANK_WORKSPACE/
 # Run clank ansible
 WORKDIR $CLANK_WORKSPACE/clank
-RUN ansible-playbook -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local playbooks/prepare_host.yml
-RUN ansible-playbook -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local playbooks/deploy_troposphere.yml
-RUN ansible-playbook -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local playbooks/post_deployment.yml
+
+# Run as much as possible before adding vars for faster rebuilds with new vars
+RUN ansible-playbook playbooks/prepare_host.yml
+
+RUN ansible-playbook playbooks/deploy_troposphere.yml \
+    --tags=dependencies \
+    --skip-tags=ssl
+
+# Add variables files
+ADD atmo-local $CLANK_WORKSPACE/
+
+RUN ansible-playbook playbooks/deploy_troposphere.yml \
+    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
+    --tags=ssl
+
+RUN service postgresql start && \
+    ansible-playbook playbooks/deploy_troposphere.yml \
+    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
+    --skip-tags=dependencies
+
+RUN ansible-playbook playbooks/post_deployment.yml \
+    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
 # Add entrypoint script
 ADD entrypoint.sh /root/entrypoint.sh

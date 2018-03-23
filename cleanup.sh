@@ -19,8 +19,11 @@ then
   atmospheredocker_sockets \
   atmospheredocker_tropo
 else
+  echo "Removing atmo-local from build directories..."
   $RM_CMD -rf $PWD/nginx/atmo-local
   $RM_CMD -rf $PWD/atmosphere/atmo-local
   $RM_CMD -rf $PWD/troposphere/atmo-local
+
+  echo "Removing logs..."
   $RM_CMD -rf $PWD/logs/*
 fi

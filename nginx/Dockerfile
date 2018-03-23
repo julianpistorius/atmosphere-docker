@@ -19,7 +19,7 @@ RUN apt-get install -y \
     python-dev \
     sudo
 
-# Prep git repo and virtualenv; install pip requirements
+# Prep Clank git repo and virtualenv; install pip requirements
 RUN pip install --upgrade pip virtualenv
 RUN mkdir -p $CLANK_WORKSPACE
 RUN mkdir -p /root/.ssh
@@ -31,9 +31,13 @@ RUN pip install -r $CLANK_WORKSPACE/clank/requirements.txt
 # Add variables files
 ADD atmo-local $CLANK_WORKSPACE/
 ADD configure_nginx.yml $CLANK_WORKSPACE/clank/playbooks/configure_nginx.yml
+
 # Run clank ansible
 WORKDIR $CLANK_WORKSPACE/clank
-RUN ansible-playbook -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local playbooks/configure_nginx.yml
+
+RUN ansible-playbook playbooks/configure_nginx.yml \
+    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+
 RUN rm /etc/nginx/sites-enabled/default
 
 EXPOSE 443
