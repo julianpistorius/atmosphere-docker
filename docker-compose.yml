@@ -6,6 +6,11 @@ services:
   atmosphere:
     build:
       context: './atmosphere'
+      args:
+        ATMO_REPO: 'cyverse'
+        ANSIBLE_REPO: 'cyverse'
+        ATMO_BRANCH: 'master'
+        ANSIBLE_BRANCH: 'master'
     volumes:
       - 'atmo-env:/opt/env/atmo:rw'
       - 'sockets:/tmp:rw'
@@ -15,6 +20,9 @@ services:
   troposphere:
     build:
       context: './troposphere'
+      args:
+        TROPO_REPO: 'cyverse'
+        TROPO_BRANCH: 'master'
     volumes:
       - 'atmo-env:/opt/env/atmo:rw'
       - 'sockets:/tmp:rw'

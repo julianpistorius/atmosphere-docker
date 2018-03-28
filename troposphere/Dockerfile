@@ -7,15 +7,15 @@ SHELL ["/bin/bash", "-c"]
 
 # Install dependencies with apt
 RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get install -y  \
     apt-transport-https \
-    git \
-    kmod \
-    libffi-dev \
-    libssl-dev \
-    python \
-    python-pip \
-    python-dev \
+    git                 \
+    kmod                \
+    libffi-dev          \
+    libssl-dev          \
+    python              \
+    python-pip          \
+    python-dev          \
     sudo
 
 # Prep Clank git repo and virtualenv; install pip requirements
@@ -40,22 +40,28 @@ WORKDIR $CLANK_WORKSPACE/clank
 RUN ansible-playbook playbooks/prepare_host.yml
 
 RUN ansible-playbook playbooks/deploy_troposphere.yml \
-    --tags=dependencies \
+    --tags=dependencies                               \
     --skip-tags=ssl
 
 # Add variables files
 ADD atmo-local $CLANK_WORKSPACE/
 
-RUN ansible-playbook playbooks/deploy_troposphere.yml \
+RUN ansible-playbook playbooks/deploy_troposphere.yml             \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
     --tags=ssl
 
-RUN service postgresql start && \
-    ansible-playbook playbooks/deploy_troposphere.yml \
+# Import args before cloning branch
+ARG TROPO_REPO='cyverse'
+ARG TROPO_BRANCH='master'
+
+RUN service postgresql start &&                                   \
+    ansible-playbook playbooks/deploy_troposphere.yml             \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
+    -e troposphere_github_repo=https://github.com/$TROPO_REPO/troposphere.git \
+    -e troposphere_github_branch=$TROPO_BRANCH                    \
     --skip-tags=dependencies
 
-RUN ansible-playbook playbooks/post_deployment.yml \
+RUN ansible-playbook playbooks/post_deployment.yml                \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
 # Add entrypoint script

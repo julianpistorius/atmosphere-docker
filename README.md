@@ -27,14 +27,16 @@ Gracefully shut down containers with `Ctrl+c`. Press it again to kill containers
 
 ## atmo-local
 
-**Required**
+See atmo-local repository in GitLab for more information on setting up the atmo-local variables.
+
+##### Required
 Set these variables in `atmo-local/clank_init/build_env/variables.yml@local`
 ```
 SERVER_NAME: "localhost"
 HOME: /opt/dev/clank_workspace
 ```
 
-**Optional**
+##### Optional
 Add the following lines to use mock authentication with your username:
 ```
 AUTH_ENABLE_MOCK: True
@@ -49,7 +51,25 @@ ATMO_DATA:
 ```
 And put the `SQL_DUMP_FILE` in `atmo-local` directory. **Make sure your containers are only locally accessible if you are doing this!!!**
 
-See atmo-local repository in GitLab for more information on setting up the atmo-local variables.
+##### Picking Atmosphere versions
+Usually, you would specify the Atmosphere and Troposphere versions with:
+```
+atmosphere_github_repo: https://github.com/cyverse/atmosphere.git
+atmosphere_github_branch: master
+atmosphere_ansible_github_repo: https://github.com/cyverse/atmosphere-ansible.git
+atmosphere_ansible_github_branch: master
+troposphere_github_repo: https://github.com/cyverse/troposphere.git
+troposphere_github_branch: master
+```
+
+I wanted to be able to specify the version with a build argument, so the variables above **will always be overridden by the default build arg in Docker, 'master', or the build arg specified when building the containers.**
+
+Example:
+```
+docker-compose build --build-arg ATMO_BRANCH=v31 TROPO_BRANCH=v31 atmosphere troposphere
+```
+
+Please offer feedback on this choice because I am not sure I like the inconsistency that it brings into the project, but it allows quick and easy builds of specific versions if you are not messing with the vars in the atmo-local file.
 
 ## Containers/Services
 - [Atmosphere](https://github.com/cyverse/atmosphere)
@@ -63,23 +83,23 @@ Logs from Atmosphere, nginx, and celery are located in `./logs`. It looks like t
 ```
 logs/
 ├── atmosphere
-│   ├── atmosphere.log
-│   ├── atmosphere_api.log
-│   ├── atmosphere_auth.log
-│   ├── atmosphere_deploy.log
-│   ├── atmosphere_email.log
-│   └── atmosphere_status.log
+│   ├── atmosphere.log
+│   ├── atmosphere_api.log
+│   ├── atmosphere_auth.log
+│   ├── atmosphere_deploy.log
+│   ├── atmosphere_email.log
+│   └── atmosphere_status.log
 ├── celery
-│   ├── atmo
-│   │   ├── atmosphere-deploy.log
-│   │   ├── atmosphere-node.log
-│   │   ├── beat.log
-│   │   └── imaging.log
-│   └── tropo
-│       ├── atmosphere-deploy.log
-│       ├── atmosphere-node.log
-│       ├── beat.log
-│       └── imaging.log
+│   ├── atmo
+│   │   ├── atmosphere-deploy.log
+│   │   ├── atmosphere-node.log
+│   │   ├── beat.log
+│   │   └── imaging.log
+│   └── tropo
+│       ├── atmosphere-deploy.log
+│       ├── atmosphere-node.log
+│       ├── beat.log
+│       └── imaging.log
 └── nginx
     ├── access.log
     └── error.log
