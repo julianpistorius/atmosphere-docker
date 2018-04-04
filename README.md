@@ -4,10 +4,11 @@ Entire Atmosphere development environment in Docker Containers using Docker-Comp
 
 **Please note that this is a work in progress. It currently works to deploy a local Atmosphere setup, but more work is required to harness the full potential of Docker Compose. Create issues for any problems or feature requests.**
 
-## Installing Docker
 
+## Installing Docker
 ### macOS
 To install Docker on macOS, follow [these instructions](https://store.docker.com/editions/community/docker-ce-desktop-mac). This includes Docker Compose.
+
 
 ### Ubuntu
 To install Docker on Ubuntu, follow [these instructions](https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-using-the-repository).
@@ -17,6 +18,7 @@ sudo curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-c
 sudo chmod +x /usr/local/bin/docker-compose
 ```
 
+
 ## Quickstart
 1. Copy `atmo-local` to the base of this directory and fill out necessary variables
 1. `./setup.sh` to copy atmo-local to each container's build directory
@@ -25,9 +27,11 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 Gracefully shut down containers with `Ctrl+c`. Press it again to kill containers.
 
+
 ## atmo-local
 
 See atmo-local repository in GitLab for more information on setting up the atmo-local variables.
+
 
 ##### Required
 Set these variables in `atmo-local/clank_init/build_env/variables.yml@local`
@@ -35,6 +39,7 @@ Set these variables in `atmo-local/clank_init/build_env/variables.yml@local`
 SERVER_NAME: "localhost"
 HOME: /opt/dev/clank_workspace
 ```
+
 
 ##### Optional
 Add the following lines to use mock authentication with your username:
@@ -51,25 +56,67 @@ ATMO_DATA:
 ```
 And put the `SQL_DUMP_FILE` in `atmo-local` directory. **Make sure your containers are only locally accessible if you are doing this!!!**
 
-##### Picking Atmosphere versions
-Usually, you would specify the Atmosphere and Troposphere versions with:
-```
-atmosphere_github_repo: https://github.com/cyverse/atmosphere.git
-atmosphere_github_branch: master
-atmosphere_ansible_github_repo: https://github.com/cyverse/atmosphere-ansible.git
-atmosphere_ansible_github_branch: master
-troposphere_github_repo: https://github.com/cyverse/troposphere.git
-troposphere_github_branch: master
-```
 
-I wanted to be able to specify the version with a build argument, so the variables above **will always be overridden by the default build arg in Docker, 'master', or the build arg specified when building the containers.**
+## Testing and development workflow
+You will most likely want to use `atmosphere-docker` with branches other than `cyverse/master`.
+
+Usually, you would specify the Atmosphere and Troposphere versions in the `atmo-local` variables file, but I wanted to be able to specify the version with a build argument for convenience, so the variables in the file **will always be overridden by the default build arg in Docker, 'master', or the build arg specified when building the containers.**
+
+Available build-args and their defaults:
+
+| ARG            | Default         | Service/Container  |
+|:---------------|:---------------:|-------------------:|
+| ATMO_REPO      | `cyverse`       | atmosphere         |
+| ATMO_BRANCH    | `master`        | atmosphere         |
+| ANSIBLE_REPO   | `cyverse`       | atmosphere         |
+| ANSIBLE_BRANCH | `master`        | atmosphere         |
+| TROPO_REPO     | `cyverse`       | troposphere        |
+| TROPO_BRANCH   | `master`        | troposphere        |
 
 Example:
 ```
 docker-compose build --build-arg ATMO_BRANCH=v31 TROPO_BRANCH=v31 atmosphere troposphere
 ```
 
-Please offer feedback on this choice because I am not sure I like the inconsistency that it brings into the project, but it allows quick and easy builds of specific versions if you are not messing with the vars in the atmo-local file.
+Please offer feedback on this choice because I am not sure I like the inconsistency that it causes, but it allows quick and easy builds of specific versions without messing with the vars in the atmo-local file.
+
+Now, you will probably want to rebuild on a new branch but you may not want to overwrite the existing image so you can easily jump back and forth.
+When you build a container it is created with the name: `atmospheredocker_<service>:latest`. So when you rebuild, that image will be overwritten. The best solution to this is to change the tags on your existing images:
+```
+docker tag atmospheredocker_atmosphere:latest atmospheredocker_atmosphere:<new_tag>
+docker tag atmospheredocker_troposphere:latest atmospheredocker_troposphere:<new_tag>
+docker tag atmospheredocker_nginx:latest atmospheredocker_nginx:<new_tag>
+```
+
+However, a simpler solution is to rebuild the Docker-Compose project using a different project name:
+```
+docker-compose -p <other_name> build
+```
+
+Another situation is that you want to rebuild from a different branch and you want to save the exact state of your existing container (such as the database), you can use `docker commit` to create an image from that container:
+```
+docker commit atmospheredocker_atmosphere_1 atmospheredocker_atmosphere:<tag>
+```
+
+However, what about the volumes and how does this compose? Well, it doesn't. So I created a script to commit the images and copy the volumes, and added an alternate docker-compose file to run the backups. Run the following with or without docker-compose running:
+```
+./alt.sh
+docker-compose -f docker-compose-alt.yml up
+```
+
+This creates:
+  - image: `alt_atmo`
+  - image: `alt_tropo`
+  - image: `alt_nginx`
+  - container: `atmospheredocker_atmosphere-alt_1`
+  - container: `atmospheredocker_troposphere-alt_1`
+  - container: `atmospheredocker_nginx-alt_1`
+  - volume: `alt_env`
+  - volume: `alt_sockets`
+  - volume: `alt_tropo`
+
+Use `./alt-cleanup.sh` to remove these containers, images, and volumes.
+
 
 ## Containers/Services
 - [Atmosphere](https://github.com/cyverse/atmosphere)
@@ -77,6 +124,7 @@ Please offer feedback on this choice because I am not sure I like the inconsiste
 - [Troposphere](https://github.com/cyverse/troposphere)
   - Entrypoint starts uWSGI, and postgresql
 - Nginx
+
 
 ## Logs
 Logs from Atmosphere, nginx, and celery are located in `./logs`. It looks like this:
@@ -107,6 +155,7 @@ logs/
 5 directories, 16 files
 ```
 
+
 ## More info
 `./setup.sh` -- copies `atmo-local/` into each of the sub-directories because each Dockerfile needs it
 
@@ -128,6 +177,6 @@ Other useful `docker-compose` commands:
 
 Inside the Dockerfiles, [Clank](https://github.com/cyverse/clank) is used to setup various parts of the stack. Note that the [`app-alter-kernel-for-imaging`](https://github.com/cyverse/clank/tree/master/roles/app-alter-kernel-for-imaging) is disabled because Docker does not allow kernel operations.
 
-#### Variables
 
+#### Variables
 Define variables in the `atmo-local/` directory before running `./setup.sh`
