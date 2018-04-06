@@ -27,7 +27,7 @@ services:
       - 'atmo-env:/opt/env/atmo:rw'
       - 'sockets:/tmp:rw'
       - 'tropo:/opt/dev/troposphere:rw'
-      - './logs/celery/tropo:/var/log/celery:rw'
+      - './logs/troposphere:/opt/dev/troposphere/logs:rw'
     depends_on:
       - 'atmosphere'
 
@@ -44,6 +44,19 @@ services:
     ports:
       - '443:443'
       - '80:80'
+
+  guacamole:
+    image: 'guacamole/guacamole:0.9.13-incubating'
+    environment:
+      GUACAMOLE_HOME: '/guac_stuff'
+      GUACD_HOSTNAME: 'guacd'
+    volumes:
+      - './guacamole:/guac_stuff:rw'
+    ports:
+      - '8080:8080'
+
+  guacd:
+    image: 'guacamole/guacd:0.9.13-incubating'
 
 volumes:
   atmo-env:

@@ -34,6 +34,19 @@ services:
       - '443:443'
       - '80:80'
 
+  guacamole:
+    image: 'guacamole/guacamole:0.9.13-incubating'
+    environment:
+      GUACAMOLE_HOME: '/guac_stuff'
+      GUACD_HOSTNAME: 'guacd'
+    volumes:
+      - './guacamole:/guac_stuff:rw'
+    ports:
+      - '8080:8080'
+
+  guacd:
+    image: 'guacamole/guacd:0.9.13-incubating'
+
 volumes:
   alt_env:
     external: true

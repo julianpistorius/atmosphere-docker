@@ -4,6 +4,8 @@ Entire Atmosphere development environment in Docker Containers using Docker-Comp
 
 **Please note that this is a work in progress. It currently works to deploy a local Atmosphere setup, but more work is required to harness the full potential of Docker Compose. Create issues for any problems or feature requests.**
 
+**Also, take a look at the open issues to see what you can expect to go wrong**
+
 
 ## Installing Docker
 ### macOS
@@ -38,6 +40,10 @@ Set these variables in `atmo-local/clank_init/build_env/variables.yml@local`
 ```
 SERVER_NAME: "localhost"
 HOME: /opt/dev/clank_workspace
+
+GUACAMOLE_ENABLED: True
+GUACAMOLE_SECRET_KEY: "so-secret"
+GUACAMOLE_SERVER_URL: "http://guacamole:8080/guacamole"
 ```
 
 
@@ -123,7 +129,14 @@ Use `./alt-cleanup.sh` to remove these containers, images, and volumes.
   - Entrypoint starts uWSGI, celeryd, redis-server, and postgresql
 - [Troposphere](https://github.com/cyverse/troposphere)
   - Entrypoint starts uWSGI, and postgresql
+- [Guacamole & guacd](https://guacamole.apache.org/)
 - Nginx
+
+
+## Guacamole
+Guacamole and Guacd containers are included as well. The `./guacamole` directory mirrors the setup of a `$GUACAMOLE_HOME` and is shared with the container. You shouldn't have to make any changes here, but if you wish to change the secret key, make sure you do so in your atmo-local variables as well. Although we tell Atmosphere that Guacamole can be found at `http://guacamole:8080/guacamole`, you can access it from your computer at `http://localhost:8080/guacamole`.
+
+In order to get Guacamole working with `atmosphere-ansible`, you have to change `GUACAMOLE_SERVER_IP` in `group_vars/all` and the `guac_server` host in the hosts file.
 
 
 ## Logs
