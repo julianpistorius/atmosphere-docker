@@ -56,7 +56,8 @@ ARG ATMO_BRANCH='master'
 ARG ANSIBLE_REPO='cyverse'
 ARG ANSIBLE_BRANCH='master'
 
-RUN ansible-playbook playbooks/deploy_atmosphere.yml              \
+RUN service postgresql start &&                                   \
+    ansible-playbook playbooks/deploy_atmosphere.yml              \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
     -e atmosphere_ansible_github_repo=https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git \
     -e atmosphere_github_repo=https://github.com/$ATMO_REPO/atmosphere.git \

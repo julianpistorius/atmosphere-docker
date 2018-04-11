@@ -6,7 +6,7 @@ ENV CLANK_WORKSPACE /opt/dev/clank_workspace
 SHELL ["/bin/bash", "-c"]
 
 # Install dependencies with apt
-RUN apt-get update
+RUN apt-get update --fix-missing
 RUN apt-get install -y \
     apt-transport-https \
     git \
