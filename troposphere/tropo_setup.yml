@@ -12,11 +12,25 @@
       become: 'yes'
       become_user: 'postgres'
 
-- name: Migrate django stuff
+- name: Finish Troposphere setup
   hosts: troposphere
   roles:
+    - { role: app-generate-ini-config,
+        template_vars: "{{ TROPO }}",
+        APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
+        tags: ['troposphere', 'generate-config'] }
+
     - { role: app-django-manage-migrate,
         APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
         VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
         DJANGO_SETTINGS_MODULE: 'troposphere.settings',
         tags: ['troposphere', 'migrate', 'manage-migrate'] }
+
+    - { role: install-theme,
+        tags: ['troposphere', 'theme'] }
+
+    - { role: build-install-troposphere-ui-assets,
+        NPM_APP_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
+        NPM_BUILD_TYPE: "{{ TROPOSPHERE_BUILD | default('production') }}",
+        tags: ['troposphere', 'npm'] }

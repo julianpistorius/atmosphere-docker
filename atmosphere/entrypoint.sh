@@ -20,12 +20,6 @@ fi
 if [[ -n $ATMO_BRANCH ]]; then
   echo "git checkout $ATMO_BRANCH"
   git checkout $ATMO_BRANCH
-
-  echo "source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure"
-  source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
-
-  echo "./manage.py collectstatic --noinput --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere"
-  ./manage.py collectstatic --noinput --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere
 fi
 
 cd /opt/dev/atmosphere-ansible
@@ -40,9 +34,6 @@ fi
 if [[ -n $ANSIBLE_BRANCH ]]; then
   echo "git checkout $ANSIBLE_BRANCH"
   git checkout $ANSIBLE_BRANCH
-
-  echo "source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure"
-  source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
 fi
 
 
@@ -50,9 +41,9 @@ service redis-server start
 service celerybeat start
 service celeryd start
 sleep 30
-source /opt/dev/clank_workspace/clank_env/bin/activate && cd /opt/dev/clank_workspace/clank && ansible-playbook playbooks/django_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+source /opt/dev/clank_workspace/clank_env/bin/activate && cd /opt/dev/clank_workspace/clank && ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 while [[ $? != 0 ]]; do
   sleep 15
-  source /opt/dev/clank_workspace/clank_env/bin/activate && cd /opt/dev/clank_workspace/clank && ansible-playbook playbooks/django_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+  source /opt/dev/clank_workspace/clank_env/bin/activate && cd /opt/dev/clank_workspace/clank && ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 done
 sudo su -l www-data -s /bin/bash -c "UWSGI_DEB_CONFNAMESPACE=app UWSGI_DEB_CONFNAME=atmosphere /opt/env/atmo/bin/uwsgi --ini /usr/share/uwsgi/conf/default.ini --ini /etc/uwsgi/apps-enabled/atmosphere.ini"

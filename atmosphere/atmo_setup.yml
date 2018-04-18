@@ -2,6 +2,18 @@
 - name: Migrate django stuff
   hosts: atmosphere
   roles:
+    - { role: app-generate-ini-config,
+        template_vars: "{{ ATMOSPHERE_ANSIBLE }}",
+        APP_BASE_DIR: "{{ ANSIBLE_DEPLOY_LOCATION | default(atmosphere_ansible_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_ansible_virtualenv_path) }}",
+        tags: ['atmosphere', 'ansible-deploy'] }
+
+    - { role: app-generate-ini-config,
+        template_vars: "{{ ATMOSPHERE_ANSIBLE }}",
+        APP_BASE_DIR: "{{ ANSIBLE_DEPLOY_LOCATION | default(atmosphere_ansible_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_ansible_virtualenv_path) }}",
+        tags: ['atmosphere', 'ansible-deploy'] }
+
     - { role: app-django-manage-migrate,
         APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
         VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",

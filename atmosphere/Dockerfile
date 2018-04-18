@@ -71,7 +71,7 @@ RUN ansible-playbook playbooks/post_deployment.yml                \
 RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' ../../atmosphere/variables.ini
 RUN /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
 
-ADD django_manage.yml $CLANK_WORKSPACE/clank/playbooks/django_manage.yml
+ADD atmo_setup.yml $CLANK_WORKSPACE/clank/playbooks/atmo_setup.yml
 
 # Add entrypoint script
 ADD entrypoint.sh /root/entrypoint.sh
