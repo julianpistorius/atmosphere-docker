@@ -82,6 +82,8 @@ docker-compose build --build-arg ATMO_BRANCH=v31 TROPO_BRANCH=v31 atmosphere tro
 
 Please offer feedback on this choice because I am not sure I like the inconsistency that it causes, but it allows quick and easy builds of specific versions without messing with the vars in the atmo-local file.
 
+These same variables are available as run-time environment variables. If they are filled out in `options.env`, the Atmosphere and Troposphere entrypoints will re-run configure and manage in order to use the new branches. **I am not sure if this works all the time, or only for branches with small differences.**
+
 Now, you will probably want to rebuild on a new branch but you may not want to overwrite the existing image so you can easily jump back and forth.
 When you build a container it is created with the name: `atmospheredocker_<service>:latest`. So when you rebuild, that image will be overwritten. The best solution to this is to change the tags on your existing images:
 ```

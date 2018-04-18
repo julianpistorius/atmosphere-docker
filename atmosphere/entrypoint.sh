@@ -1,5 +1,51 @@
 #!/bin/bash
 
+echo "-------------------------------------------------------------------------"
+echo "ENVIRONMENT:"
+echo "ATMO_REPO: $ATMO_REPO"
+echo "ATMO_BRANCH: $ATMO_BRANCH"
+echo "ANSIBLE_REPO: $ANSIBLE_REPO"
+echo "ANSIBLE_BRANCH: $ANSIBLE_BRANCH"
+echo "-------------------------------------------------------------------------"
+
+cd /opt/dev/atmosphere
+if [[ -n $ATMO_REPO ]]; then
+  echo "git remote add $ATMO_REPO https://github.com/$ATMO_REPO/atmosphere.git"
+  git remote add $ATMO_REPO https://github.com/$ATMO_REPO/atmosphere.git
+
+  echo "git fetch $ATMO_REPO"
+  git fetch $ATMO_REPO
+fi
+
+if [[ -n $ATMO_BRANCH ]]; then
+  echo "git checkout $ATMO_BRANCH"
+  git checkout $ATMO_BRANCH
+
+  echo "source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure"
+  source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
+
+  echo "./manage.py collectstatic --noinput --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere"
+  ./manage.py collectstatic --noinput --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere
+fi
+
+cd /opt/dev/atmosphere-ansible
+if [[ -n $ANSIBLE_REPO ]]; then
+  echo "git remote add $ANSIBLE_REPO https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git"
+  git remote add $ANSIBLE_REPO https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git
+
+  echo "git fetch $ANSIBLE_REPO"
+  git fetch $ANSIBLE_REPO
+fi
+
+if [[ -n $ANSIBLE_BRANCH ]]; then
+  echo "git checkout $ANSIBLE_BRANCH"
+  git checkout $ANSIBLE_BRANCH
+
+  echo "source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure"
+  source /opt/env/atmo/bin/activate && /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
+fi
+
+
 service redis-server start
 service celerybeat start
 service celeryd start
