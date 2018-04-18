@@ -3,6 +3,15 @@ version: '3'
 
 services:
 
+  postgres:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: 'atmo_app'
+      POSTGRES_PASSWORD: 'atmosphere'
+      POSTGRES_DB: 'atmo_prod'
+    volumes:
+      - './postgres/atmo-local:/docker-entrypoint-initdb.d'
+
   atmosphere:
     build:
       context: './atmosphere'
@@ -16,6 +25,8 @@ services:
       - 'sockets:/tmp:rw'
       - './logs/celery/atmo:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
+    depends_on:
+      - 'postgres'
 
   troposphere:
     build:
