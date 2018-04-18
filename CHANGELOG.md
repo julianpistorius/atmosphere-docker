@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [PR #1: Postgres database container](https://github.com/cyverse/atmosphere-docker/pull/1) - 2018-04-18
+## [PR #1: Postgres database container](https://github.com/cyverse/atmosphere-docker/pull/2) - 2018-04-18
 ---
 ### Added
 - Postgres container
