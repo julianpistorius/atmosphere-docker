@@ -54,13 +54,9 @@ AUTH_ENABLE_MOCK: True
 AUTH_MOCK_USER: "calvinmclean"
 ```
 
-If you want to populate your database with production data, add these lines:
-```
-ATMO_DATA:
-  LOAD_DATABASE: True
-  SQL_DUMP_FILE: "{{ HOME }}/atmo_prod.sql"
-```
-And put the `SQL_DUMP_FILE` in `atmo-local` directory. **Make sure your containers are only locally accessible if you are doing this!!!**
+If you want to populate your database with production data, follow the directions in the `atmo-local` repository to download a sanitary sql dump and put it in `atmo-local` directory. **Make sure your containers are only locally accessible if you are doing this!!!**
+
+The database file will be picked up and used by the postgres container when you run `docker-compose up` after using `./setup.sh`
 
 
 ## Testing and development workflow
@@ -99,7 +95,8 @@ However, a simpler solution is to rebuild the Docker-Compose project using a dif
 docker-compose -p <other_name> build
 ```
 
-Another situation is that you want to rebuild from a different branch and you want to save the exact state of your existing container (such as the database), you can use `docker commit` to create an image from that container:
+Another situation is that you want to rebuild from a different branch and you want to save the exact state of your existing container you can use `docker commit` to create an image from that container:
+**Note: If you just want to preserve the state of your database, this is no longer necessary as long as you don't delete the postgres container.** Just delete the other containers and re-run `docker-compose up`.
 ```
 docker commit atmospheredocker_atmosphere_1 atmospheredocker_atmosphere:<tag>
 ```
@@ -114,9 +111,11 @@ This creates:
   - image: `alt_atmo`
   - image: `alt_tropo`
   - image: `alt_nginx`
+  - image: `alt_postgres`
   - container: `atmospheredocker_atmosphere-alt_1`
   - container: `atmospheredocker_troposphere-alt_1`
   - container: `atmospheredocker_nginx-alt_1`
+  - container: `atmospheredocker_postgres-alt_1`
   - volume: `alt_env`
   - volume: `alt_sockets`
   - volume: `alt_tropo`
@@ -126,11 +125,12 @@ Use `./alt-cleanup.sh` to remove these containers, images, and volumes.
 
 ## Containers/Services
 - [Atmosphere](https://github.com/cyverse/atmosphere)
-  - Entrypoint starts uWSGI, celeryd, redis-server, and postgresql
+  - Entrypoint starts uWSGI, celeryd, redis-server
 - [Troposphere](https://github.com/cyverse/troposphere)
-  - Entrypoint starts uWSGI, and postgresql
+  - Entrypoint starts uWSGI
 - [Guacamole & guacd](https://guacamole.apache.org/)
 - Nginx
+- [Postgres](https://hub.docker.com/_/postgres/)
 
 
 ## Guacamole
@@ -174,7 +174,7 @@ logs/
 
 `./cleanup.sh` -- deletes `atmo-local/` from each sub-directory (but not the main one at `atmosphere-docker/atmo-local/`) and clears the log directory
 
-Note: Use `./cleanup.sh --prune` to **ONLY** remove containers and volumes created by `docker-compose up`, without deleting other files
+Note: Use `./cleanup.sh --prune` to **ONLY** remove volumes created by `docker-compose up`, without deleting other files
 
 `docker-compose up` -- creates and starts the whole stack
 

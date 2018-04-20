@@ -12,3 +12,6 @@ $CP_CMD -R $PWD/atmo-local $PWD/atmosphere/
 
 echo "Copying atmo-local to ./troposphere..."
 $CP_CMD -R $PWD/atmo-local $PWD/troposphere/
+
+echo "Copying atmo-local to ./postgres..."
+$CP_CMD -R $PWD/atmo-local $PWD/postgres/

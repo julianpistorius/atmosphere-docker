@@ -4,6 +4,7 @@ echo "Committing containers to new images..."
 docker commit atmospheredocker_atmosphere_1 alt_atmo
 docker commit atmospheredocker_troposphere_1 alt_tropo
 docker commit atmospheredocker_nginx_1 alt_nginx
+docker commit atmospheredocker_postgres_1 alt_postgres
 
 echo "Stopping docker-compose..."
 docker-compose stop

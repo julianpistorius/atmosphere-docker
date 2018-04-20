@@ -1,0 +1,22 @@
+---
+- name: Create troposphere database
+  hosts: troposphere
+  tasks:
+    - name: database {{ DBNAME | default("") }} is created
+      postgresql_db:
+        name: 'troposphere'
+        state: 'present'
+        login_user: 'atmo_app'
+        login_host: 'postgres'
+        login_password: 'atmosphere'
+      become: 'yes'
+      become_user: 'postgres'
+
+- name: Migrate django stuff
+  hosts: troposphere
+  roles:
+    - { role: app-django-manage-migrate,
+        APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
+        DJANGO_SETTINGS_MODULE: 'troposphere.settings',
+        tags: ['troposphere', 'migrate', 'manage-migrate'] }

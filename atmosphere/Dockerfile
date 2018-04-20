@@ -19,7 +19,8 @@ RUN apt-get install -y  \
     sudo
 
 # Prep Clank git repo and virtualenv; install pip requirements
-RUN pip install --upgrade pip virtualenv
+# RUN pip install --upgrade pip virtualenv
+RUN pip install --upgrade pip==9.0.3 virtualenv
 RUN mkdir -p $CLANK_WORKSPACE
 RUN mkdir -p /root/.ssh
 RUN git clone --depth 1 https://github.com/cyverse/clank.git $CLANK_WORKSPACE/clank;
@@ -56,17 +57,21 @@ ARG ATMO_BRANCH='master'
 ARG ANSIBLE_REPO='cyverse'
 ARG ANSIBLE_BRANCH='master'
 
-RUN service postgresql start &&                                   \
-    ansible-playbook playbooks/deploy_atmosphere.yml              \
+RUN ansible-playbook playbooks/deploy_atmosphere.yml              \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
     -e atmosphere_ansible_github_repo=https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git \
     -e atmosphere_github_repo=https://github.com/$ATMO_REPO/atmosphere.git \
     -e atmosphere_github_branch=$ATMO_BRANCH                      \
     -e atmosphere_ansible_github_branch=$ANSIBLE_BRANCH           \
-    --skip-tags=kernel,dependencies
+    --skip-tags=kernel,dependencies,database,manage-migrate,manage-load-tables
 
 RUN ansible-playbook playbooks/post_deployment.yml                \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+
+RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' ../../atmosphere/variables.ini
+RUN /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
+
+ADD django_manage.yml $CLANK_WORKSPACE/clank/playbooks/django_manage.yml
 
 # Add entrypoint script
 ADD entrypoint.sh /root/entrypoint.sh
