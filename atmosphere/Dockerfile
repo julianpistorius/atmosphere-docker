@@ -68,10 +68,11 @@ RUN ansible-playbook playbooks/deploy_atmosphere.yml              \
 RUN ansible-playbook playbooks/post_deployment.yml                \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
-RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' ../../atmosphere/variables.ini
-RUN /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
+RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/atmosphere/variables.ini && \
+    /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
 
 ADD atmo_setup.yml $CLANK_WORKSPACE/clank/playbooks/atmo_setup.yml
+ADD atmo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/atmo_db_manage.yml
 
 # Add entrypoint script
 ADD entrypoint.sh /root/entrypoint.sh

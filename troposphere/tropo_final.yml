@@ -1,0 +1,11 @@
+---
+- name: Finish Troposphere setup
+  hosts: troposphere
+  roles:
+    - { role: install-theme,
+        tags: ['troposphere', 'theme'] }
+
+    - { role: build-install-troposphere-ui-assets,
+        NPM_APP_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
+        NPM_BUILD_TYPE: "{{ TROPOSPHERE_BUILD | default('production') }}",
+        tags: ['troposphere', 'npm'] }

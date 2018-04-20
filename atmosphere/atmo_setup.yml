@@ -1,12 +1,12 @@
 ---
-- name: Migrate django stuff
+- name: Generate ini configs for atmosphere and atmosphere-ansible
   hosts: atmosphere
   roles:
     - { role: app-generate-ini-config,
-        template_vars: "{{ ATMOSPHERE_ANSIBLE }}",
-        APP_BASE_DIR: "{{ ANSIBLE_DEPLOY_LOCATION | default(atmosphere_ansible_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_ansible_virtualenv_path) }}",
-        tags: ['atmosphere', 'ansible-deploy'] }
+        template_vars: "{{ ATMO }}",
+        APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",
+        tags: ['atmosphere', 'generate-config'] }
 
     - { role: app-generate-ini-config,
         template_vars: "{{ ATMOSPHERE_ANSIBLE }}",
@@ -14,14 +14,11 @@
         VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_ansible_virtualenv_path) }}",
         tags: ['atmosphere', 'ansible-deploy'] }
 
-    - { role: app-django-manage-migrate,
-        APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",
-        DJANGO_SETTINGS_MODULE: 'atmosphere.settings',
-        tags: ['atmosphere', 'manage-migrate'] }
+- name: Make sure DATABASE_HOST is set to 'postgres'
+  hosts: atmosphere
+  tasks:
+    - name: Make sure DATABASE_HOST is set to 'postgres'
+      shell: sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/atmosphere/variables.ini
 
-    - { role: app-django-manage-load-tables,
-        APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",
-        DJANGO_SETTINGS_MODULE: 'atmosphere.settings',
-        tags: ['atmosphere','manage-load-tables'] }
+    - name: run generate script for app
+      shell: '/opt/env/atmo/bin/python /opt/dev/atmosphere/configure'

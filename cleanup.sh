@@ -6,7 +6,6 @@ RM_CMD=`which rm`
 
 if [[ $1 == "--prune" ]]
 then
-  echo ""
   echo "Removing volumes..."
   docker volume rm \
   atmospheredocker_atmo-env \
