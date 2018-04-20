@@ -23,7 +23,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ## Quickstart
 1. Copy `atmo-local` to the base of this directory and fill out necessary variables
-1. `./setup.sh` to copy atmo-local to each container's build directory
+1. `./scripts/setup.sh` to copy atmo-local to each container's build directory
 1. `docker-compose build` to build all containers. This step will take a while the first time it is run, but will be quicker after that
 1. `docker-compose up` to start all containers (use the `-d` option to start containers in the background)
 
@@ -56,7 +56,7 @@ AUTH_MOCK_USER: "calvinmclean"
 
 If you want to populate your database with production data, follow the directions in the `atmo-local` repository to download a sanitary sql dump and put it in `atmo-local` directory. **Make sure your containers are only locally accessible if you are doing this!!!**
 
-The database file will be picked up and used by the postgres container when you run `docker-compose up` after using `./setup.sh`
+The database file will be picked up and used by the postgres container when you run `docker-compose up` after using `./scripts/setup.sh`
 
 
 ## Testing and development workflow
@@ -105,7 +105,7 @@ docker commit atmospheredocker_atmosphere_1 atmospheredocker_atmosphere:<tag>
 
 However, what about the volumes and how does this compose? Well, it doesn't. So I created a script to commit the images and copy the volumes, and added an alternate docker-compose file to run the backups. Run the following with or without docker-compose running:
 ```
-./alt.sh
+./scripts/alt.sh
 docker-compose -f docker-compose-alt.yml up
 ```
 
@@ -122,7 +122,7 @@ This creates:
   - volume: `alt_sockets`
   - volume: `alt_tropo`
 
-Use `./alt-cleanup.sh` to remove these containers, images, and volumes.
+Use `./scripts/alt-cleanup.sh` to remove these containers, images, and volumes.
 
 
 ## Containers/Services
@@ -172,11 +172,11 @@ logs/
 
 
 ## More info
-`./setup.sh` -- copies `atmo-local/` into each of the sub-directories because each Dockerfile needs it
+`./scripts/setup.sh` -- copies `atmo-local/` into each of the sub-directories because each Dockerfile needs it
 
-`./cleanup.sh` -- deletes `atmo-local/` from each sub-directory (but not the main one at `atmosphere-docker/atmo-local/`) and clears the log directory
+`./scripts/cleanup.sh` -- deletes `atmo-local/` from each sub-directory (but not the main one at `atmosphere-docker/atmo-local/`) and clears the log directory
 
-Note: Use `./cleanup.sh --prune` to **ONLY** remove volumes created by `docker-compose up`, without deleting other files
+Note: Use `./scripts/cleanup.sh --prune` to **ONLY** remove volumes created by `docker-compose up`, without deleting other files
 
 `docker-compose up` -- creates and starts the whole stack
 
@@ -194,4 +194,4 @@ Inside the Dockerfiles, [Clank](https://github.com/cyverse/clank) is used to set
 
 
 #### Variables
-Define variables in the `atmo-local/` directory before running `./setup.sh`
+Define variables in the `atmo-local/` directory before running `./scripts/setup.sh`
