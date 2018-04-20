@@ -1,5 +1,5 @@
 ---
-- name: Create troposphere database
+- name: Create Troposphere database
   hosts: troposphere
   tasks:
     - name: database {{ DBNAME | default("") }} is created
@@ -12,9 +12,16 @@
       become: 'yes'
       become_user: 'postgres'
 
-- name: Migrate django stuff
+- name: Finish Troposphere database setup
   hosts: troposphere
   roles:
+    - { role: app-django-manage-collectstatic,
+        APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
+        STATIC_DIR_PATH: 'troposphere/tropo-static',
+        DJANGO_SETTINGS_MODULE: 'troposphere.settings',
+        tags: ['troposphere', 'manage-collectstatic']}
+
     - { role: app-django-manage-migrate,
         APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
         VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",

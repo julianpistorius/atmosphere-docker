@@ -1,7 +1,13 @@
 ---
-- name: Migrate django stuff
+- name: Finish Atmosphere database setup
   hosts: atmosphere
   roles:
+    - { role: app-django-manage-collectstatic,
+        APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",
+        DJANGO_SETTINGS_MODULE: 'atmosphere.settings',
+        tags: ['atmosphere', 'manage-collectstatic'] }
+
     - { role: app-django-manage-migrate,
         APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
         VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",

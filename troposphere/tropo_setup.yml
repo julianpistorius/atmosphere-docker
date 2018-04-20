@@ -1,0 +1,18 @@
+---
+- name: Genereate Troposphere ini configs
+  hosts: troposphere
+  roles:
+    - { role: app-generate-ini-config,
+        template_vars: "{{ TROPO }}",
+        APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
+        VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
+        tags: ['troposphere', 'generate-config'] }
+
+- name: Make sure DATABASE_HOST is set to 'postgres'
+  hosts: troposphere
+  tasks:
+    - name: Make sure DATABASE_HOST is set to 'postgres'
+      shell: sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/troposphere/variables.ini
+
+    - name: run generate script for app
+      shell: '/opt/env/troposphere/bin/python /opt/dev/troposphere/configure'

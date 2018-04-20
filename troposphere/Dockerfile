@@ -64,10 +64,12 @@ RUN ansible-playbook playbooks/deploy_troposphere.yml             \
 RUN ansible-playbook playbooks/post_deployment.yml                \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
-RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/troposphere/variables.ini
-RUN /opt/env/troposphere/bin/python /opt/dev/troposphere/configure
+RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/troposphere/variables.ini && \
+    /opt/env/troposphere/bin/python /opt/dev/troposphere/configure
 
-ADD django_manage.yml $CLANK_WORKSPACE/clank/playbooks/django_manage.yml
+ADD tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
+ADD tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
+ADD tropo_final.yml $CLANK_WORKSPACE/clank/playbooks/tropo_final.yml
 
 # Add entrypoint script
 ADD entrypoint.sh /root/entrypoint.sh
