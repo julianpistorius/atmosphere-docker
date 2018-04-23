@@ -1,44 +1,53 @@
 # Docker Container for Nginx
-from ubuntu:14.04
+FROM debian:jessie-slim
 
 # Set environment
 ENV CLANK_WORKSPACE /opt/dev/clank_workspace
 SHELL ["/bin/bash", "-c"]
 
 # Install dependencies with apt
-RUN apt-get update --fix-missing
-RUN apt-get install -y \
-    apt-transport-https \
-    git \
-    kmod \
-    libffi-dev \
-    libssl-dev \
-    nginx \
-    python \
-    python-pip \
-    python-dev \
-    sudo
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+      apt-transport-https \
+      git \
+      libffi-dev \
+      libssl-dev \
+      nginx \
+      python \
+      python-pip \
+      python-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Prep Clank git repo and virtualenv; install pip requirements
-RUN pip install --upgrade pip virtualenv
-RUN mkdir -p $CLANK_WORKSPACE
-RUN mkdir -p /root/.ssh
-RUN git clone --depth 1 https://github.com/cyverse/clank.git $CLANK_WORKSPACE/clank;
-RUN virtualenv $CLANK_WORKSPACE/clank_env
-RUN source $CLANK_WORKSPACE/clank_env/bin/activate
-RUN pip install -r $CLANK_WORKSPACE/clank/requirements.txt
+RUN mkdir -p $CLANK_WORKSPACE /root/.ssh
+RUN git clone --depth 1 https://github.com/cyverse/clank.git $CLANK_WORKSPACE/clank && \
+    pip install --upgrade pip==9.0.3 virtualenv && \
+    virtualenv $CLANK_WORKSPACE/clank_env
+
+RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
+    pip install --no-cache-dir -r $CLANK_WORKSPACE/clank/requirements.txt
 
 # Add variables files
 ADD atmo-local $CLANK_WORKSPACE/
 ADD configure_nginx.yml $CLANK_WORKSPACE/clank/playbooks/configure_nginx.yml
 
-# Run clank ansible
+# Run Clank ansible
 WORKDIR $CLANK_WORKSPACE/clank
-
-RUN ansible-playbook playbooks/configure_nginx.yml \
+RUN cp $CLANK_WORKSPACE/clank/roles/tls-cert/vars/Ubuntu.yml $CLANK_WORKSPACE/clank/roles/tls-cert/vars/Debian.yml
+RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
+    ansible-playbook playbooks/configure_nginx.yml \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
-RUN rm /etc/nginx/sites-enabled/default
+# Cleanup
+RUN rm /etc/nginx/sites-enabled/default && rm -rf $CLANK_WORKSPACE
+RUN apt-get remove -y \
+      apt-transport-https \
+      git \
+      python \
+      python-pip \
+      python-dev && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 EXPOSE 443
 CMD ["nginx", "-g", "daemon off;"]
