@@ -28,6 +28,7 @@ if [[ -n $TROPO_BRANCH ]]; then
 fi
 
 # Wait for postgres and run playbook until it works
+sleep 30
 source /opt/dev/clank_workspace/clank_env/bin/activate
 cd /opt/dev/clank_workspace/clank
 echo "ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"

@@ -59,7 +59,7 @@ services:
       - '80:80'
 
   guacamole:
-    image: 'guacamole/guacamole:0.9.13-incubating'
+    image: 'guacamole/guacamole:0.9.14'
     environment:
       GUACAMOLE_HOME: '/guac_stuff'
       GUACD_HOSTNAME: 'guacd'
@@ -69,7 +69,7 @@ services:
       - '8080:8080'
 
   guacd:
-    image: 'guacamole/guacd:0.9.13-incubating'
+    image: 'guacamole/guacd:0.9.14'
 
 volumes:
   atmo-env:
