@@ -25,6 +25,7 @@ services:
       - 'sockets:/tmp:rw'
       - './logs/celery/atmo:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
+      - './atmo-local:/opt/dev/clank_workspace/atmo-local:ro'
     env_file: 'options.env'
     depends_on:
       - 'postgres'
@@ -40,6 +41,7 @@ services:
       - 'sockets:/tmp:rw'
       - 'tropo:/opt/dev/troposphere:rw'
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
+      - './atmo-local:/opt/dev/clank_workspace/atmo-local:ro'
     env_file: 'options.env'
     depends_on:
       - 'atmosphere'

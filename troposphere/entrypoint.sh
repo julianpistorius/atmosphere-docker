@@ -19,13 +19,13 @@ fi
 if [[ -n $TROPO_BRANCH ]]; then
   echo "git checkout $TROPO_BRANCH"
   git checkout $TROPO_BRANCH
-
-  # re-configure ini config
-  source /opt/dev/clank_workspace/clank_env/bin/activate
-  cd /opt/dev/clank_workspace/clank
-  echo "ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-  ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 fi
+
+# re-configure ini config
+source /opt/dev/clank_workspace/clank_env/bin/activate
+cd /opt/dev/clank_workspace/clank
+echo "ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
+ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
 # Wait for postgres and run playbook until it works
 sleep 30

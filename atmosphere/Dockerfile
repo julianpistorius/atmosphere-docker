@@ -54,7 +54,7 @@ RUN mkdir -p /run/uwsgi/app/atmosphere /var/log/uwsgi && \
 WORKDIR $CLANK_WORKSPACE/clank
 
 # Add variables files
-ADD atmo-local $CLANK_WORKSPACE/
+COPY atmo-local $CLANK_WORKSPACE/
 
 # Import args before cloning branches
 ARG ATMO_REPO='cyverse'
@@ -69,16 +69,15 @@ RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
     -e atmosphere_github_repo=https://github.com/$ATMO_REPO/atmosphere.git \
     -e atmosphere_github_branch=$ATMO_BRANCH                      \
     -e atmosphere_ansible_github_branch=$ANSIBLE_BRANCH           \
-    --skip-tags=kernel,dependencies,database,manage-collectstatic,manage-migrate,manage-load-tables
+    --skip-tags=kernel,dependencies,database,manage-collectstatic,manage-migrate,manage-load-tables,generate-config,ansible-deploy
 
-RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/atmosphere/variables.ini && \
-    /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
-
-RUN apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf $CLANK_WORKSPACE/atmo-local
 
 # Prepare entrypoint
-ADD atmo_setup.yml $CLANK_WORKSPACE/clank/playbooks/atmo_setup.yml
-ADD atmo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/atmo_db_manage.yml
-ADD entrypoint.sh /root/entrypoint.sh
+COPY atmo_setup.yml $CLANK_WORKSPACE/clank/playbooks/atmo_setup.yml
+COPY atmo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/atmo_db_manage.yml
+COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]

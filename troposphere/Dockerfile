@@ -58,7 +58,7 @@ RUN mkdir -p /run/uwsgi/app/troposphere /var/log/uwsgi && \
 WORKDIR $CLANK_WORKSPACE/clank
 
 # Add variables files
-ADD atmo-local $CLANK_WORKSPACE/
+COPY atmo-local $CLANK_WORKSPACE/
 
 # Import args before cloning branch
 ARG TROPO_REPO='cyverse'
@@ -69,17 +69,16 @@ RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
     -e troposphere_github_repo=https://github.com/$TROPO_REPO/troposphere.git \
     -e troposphere_github_branch=$TROPO_BRANCH                    \
-    --skip-tags=dependencies,database,manage-collectstatic,manage-migrate,theme,npm
+    --skip-tags=dependencies,database,manage-collectstatic,manage-migrate,theme,npm,generate-config
 
-RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/troposphere/variables.ini && \
-    /opt/env/troposphere/bin/python /opt/dev/troposphere/configure
-
-RUN apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf $CLANK_WORKSPACE/atmo-local
 
 # Prepare entrypoint
-ADD tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
-ADD tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
-ADD tropo_final.yml $CLANK_WORKSPACE/clank/playbooks/tropo_final.yml
-ADD entrypoint.sh /root/entrypoint.sh
+COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
+COPY tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
+COPY tropo_final.yml $CLANK_WORKSPACE/clank/playbooks/tropo_final.yml
+COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]

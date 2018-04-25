@@ -8,6 +8,19 @@
         VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",
         tags: ['atmosphere', 'generate-config'] }
 
+    - { role: app-setup-ssh-keys,
+        APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
+        SSH_PRIV_KEY: "{{ ID_RSA | default('') }}",
+        SSH_PUB_KEY: "{{ ID_RSA_PUB | default('') }}",
+        tags: ['atmosphere', 'ansible-deploy', 'setup-ssh-keys'] }
+
+    - { role: app-install-instance-deploy-automation,
+        APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
+        INSTANCE_DEPLOY_AUTOMATION_DIR: "{{ ANSIBLE_DEPLOY_LOCATION | default(atmosphere_ansible_directory_path) }}",
+        INSTANCE_DEPLOY_AUTOMATION_HOSTS_FILE: "{{ ANSIBLE_HOSTS_FILE | default('') }}",
+        INSTANCE_DEPLOY_AUTOMATION_GROUP_VARS_FOLDER: "{{ ANSIBLE_GROUP_VARS_FOLDER | default('') }}",
+        tags: ['atmosphere', 'ansible-deploy'] }
+
     - { role: app-generate-ini-config,
         template_vars: "{{ ATMOSPHERE_ANSIBLE }}",
         APP_BASE_DIR: "{{ ANSIBLE_DEPLOY_LOCATION | default(atmosphere_ansible_directory_path) }}",
