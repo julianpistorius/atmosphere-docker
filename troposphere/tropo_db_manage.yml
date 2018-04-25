@@ -2,15 +2,13 @@
 - name: Create Troposphere database
   hosts: troposphere
   tasks:
-    - name: database {{ DBNAME | default("") }} is created
+    - name: database 'troposphere' is created
       postgresql_db:
         name: 'troposphere'
         state: 'present'
         login_user: 'atmo_app'
         login_host: 'postgres'
         login_password: 'atmosphere'
-      become: 'yes'
-      become_user: 'postgres'
 
 - name: Finish Troposphere database setup
   hosts: troposphere
