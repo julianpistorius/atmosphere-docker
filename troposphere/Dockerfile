@@ -57,23 +57,32 @@ RUN mkdir -p /run/uwsgi/app/troposphere /var/log/uwsgi && \
 # Run Clank ansible
 WORKDIR $CLANK_WORKSPACE/clank
 
-# Add variables files
-COPY atmo-local $CLANK_WORKSPACE/
-
 # Import args before cloning branch
 ARG TROPO_REPO='cyverse'
 ARG TROPO_BRANCH='master'
 
+# Clone repos and pip install requirements
+RUN mkdir /opt/env && \
+    virtualenv /opt/env/troposphere
+RUN git clone -b $TROPO_BRANCH https://github.com/$TROPO_REPO/troposphere.git /opt/dev/troposphere
+RUN source /opt/env/troposphere/bin/activate && pip install -r /opt/dev/troposphere/requirements.txt
+
+# Config logging
+RUN mkdir /var/tmp/django_cache/ && \
+    touch /opt/dev/troposphere/logs/troposphere.log
+
+# Set webserver permissions
+RUN chown -R www-data:www-data /opt/dev/troposphere && \
+    chmod g+rw /opt/dev/troposphere && \
+    chown -R www-data:www-data /var/tmp/django_cache/ && \
+    chmod g+rw /var/tmp/django_cache/
+
+COPY install_tropo.yml $CLANK_WORKSPACE/clank/playbooks/install_tropo.yml
 RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    ansible-playbook playbooks/deploy_troposphere.yml             \
-    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
-    -e troposphere_github_repo=https://github.com/$TROPO_REPO/troposphere.git \
-    -e troposphere_github_branch=$TROPO_BRANCH                    \
-    --skip-tags=dependencies,database,manage-collectstatic,manage-migrate,theme,npm,generate-config
+    ansible-playbook playbooks/install_tropo.yml
 
 RUN apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf $CLANK_WORKSPACE/atmo-local
+    rm -rf /var/lib/apt/lists/*
 
 # Prepare entrypoint
 COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml

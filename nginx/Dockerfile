@@ -27,27 +27,27 @@ RUN git clone --depth 1 https://github.com/cyverse/clank.git $CLANK_WORKSPACE/cl
 RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
     pip install --no-cache-dir -r $CLANK_WORKSPACE/clank/requirements.txt
 
-# Add variables files
-ADD atmo-local $CLANK_WORKSPACE/
+# Add new playbook file
 ADD configure_nginx.yml $CLANK_WORKSPACE/clank/playbooks/configure_nginx.yml
 
-# Run Clank ansible
+# Prepare Clank
 WORKDIR $CLANK_WORKSPACE/clank
 RUN cp $CLANK_WORKSPACE/clank/roles/tls-cert/vars/Ubuntu.yml $CLANK_WORKSPACE/clank/roles/tls-cert/vars/Debian.yml
-RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    ansible-playbook playbooks/configure_nginx.yml \
-    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
 # Cleanup
-RUN rm /etc/nginx/sites-enabled/default && rm -rf $CLANK_WORKSPACE
-RUN apt-get remove -y \
-      apt-transport-https \
-      git \
-      python \
-      python-pip \
-      python-dev && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+RUN rm /etc/nginx/sites-enabled/default
+# RUN apt-get remove -y \
+#       apt-transport-https \
+#       git \
+#       python \
+#       python-pip \
+#       python-dev && \
+#     apt-get autoremove -y && \
+#     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 443
-CMD ["nginx", "-g", "daemon off;"]
+# CMD ["nginx", "-g", "daemon off;"]
+CMD source $CLANK_WORKSPACE/clank_env/bin/activate && \
+    ansible-playbook playbooks/configure_nginx.yml \
+    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local && \
+    nginx -g "daemon off;"

@@ -28,6 +28,7 @@ RUN apt-get update && \
       python-psycopg2 \
       python-setuptools \
       python-tk \
+      redis-server \
       sudo \
       swig \
       ufw \
@@ -53,27 +54,37 @@ RUN mkdir -p /run/uwsgi/app/atmosphere /var/log/uwsgi && \
 # Run Clank ansible
 WORKDIR $CLANK_WORKSPACE/clank
 
-# Add variables files
-COPY atmo-local $CLANK_WORKSPACE/
-
 # Import args before cloning branches
 ARG ATMO_REPO='cyverse'
 ARG ATMO_BRANCH='master'
 ARG ANSIBLE_REPO='cyverse'
 ARG ANSIBLE_BRANCH='master'
 
+# Clone repos and pip install requirements
+RUN mkdir /opt/env && \
+    virtualenv /opt/env/atmosphere &&\
+    ln -s /opt/env/atmosphere/ /opt/env/atmo
+RUN git clone -b $ATMO_BRANCH https://github.com/$ATMO_REPO/atmosphere.git /opt/dev/atmosphere &&\
+    git clone -b $ANSIBLE_BRANCH https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git /opt/dev/atmosphere-ansible
+RUN source /opt/env/atmo/bin/activate && pip install -r /opt/dev/atmosphere/requirements.txt
+
+# Config logging
+RUN mkdir /opt/dev/atmosphere/logs /var/tmp/django_cache/ && \
+    touch /opt/dev/atmosphere/logs/atmosphere.log && \
+    touch /opt/dev/atmosphere/logs/atmosphere_status.log
+
+# Set webserver permissions
+RUN chown -R www-data:www-data /opt/dev/atmosphere && \
+    chmod g+rw /opt/dev/atmosphere && \
+    chown -R www-data:www-data /var/tmp/django_cache/ && \
+    chmod g+rw /var/tmp/django_cache/
+
+COPY install_atmo.yml $CLANK_WORKSPACE/clank/playbooks/install_atmo.yml
 RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    ansible-playbook playbooks/deploy_atmosphere.yml              \
-    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
-    -e atmosphere_ansible_github_repo=https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git \
-    -e atmosphere_github_repo=https://github.com/$ATMO_REPO/atmosphere.git \
-    -e atmosphere_github_branch=$ATMO_BRANCH                      \
-    -e atmosphere_ansible_github_branch=$ANSIBLE_BRANCH           \
-    --skip-tags=kernel,dependencies,database,manage-collectstatic,manage-migrate,manage-load-tables,generate-config,ansible-deploy
+    ansible-playbook playbooks/install_atmo.yml
 
 RUN apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf $CLANK_WORKSPACE/atmo-local
+    rm -rf /var/lib/apt/lists/*
 
 # Prepare entrypoint
 COPY atmo_setup.yml $CLANK_WORKSPACE/clank/playbooks/atmo_setup.yml

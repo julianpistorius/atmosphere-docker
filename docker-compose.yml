@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: 'atmosphere'
       POSTGRES_DB: 'atmo_prod'
     volumes:
-      - './postgres/atmo-local:/docker-entrypoint-initdb.d'
+      - './postgres:/docker-entrypoint-initdb.d'
 
   atmosphere:
     build:
@@ -25,7 +25,7 @@ services:
       - 'sockets:/tmp:rw'
       - './logs/celery/atmo:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
-      - './atmo-local:/opt/dev/clank_workspace/atmo-local:ro'
+      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
     env_file: 'options.env'
     depends_on:
       - 'postgres'
@@ -41,7 +41,7 @@ services:
       - 'sockets:/tmp:rw'
       - 'tropo:/opt/dev/troposphere:rw'
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
-      - './atmo-local:/opt/dev/clank_workspace/atmo-local:ro'
+      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
     env_file: 'options.env'
     depends_on:
       - 'atmosphere'
@@ -53,6 +53,7 @@ services:
       - 'sockets:/tmp'
       - 'tropo:/opt/dev/troposphere:rw'
       - './logs/nginx:/var/log/nginx:rw'
+      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
     depends_on:
       - 'atmosphere'
       - 'troposphere'
