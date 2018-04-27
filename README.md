@@ -25,12 +25,15 @@ sudo chmod +x /usr/local/bin/docker-compose
 1. Copy `atmo-local` to the base of this directory and fill out necessary variables (**see atmo-local section below**)
 1. `docker-compose build` to build all containers. This step will take a while the first time it is run, but will be quicker after that
 1. `docker-compose up` to start all containers (use the `-d` option to start containers in the background)
-  - During startup, the postgres container will load the `.sql` dump file if it exists, which takes a while. During this process, Atmosphere and Troposphere run Clank tasks that rely on the database so these will fail and re-run until the database is ready.
-  - Optionally change repositories and branches by modifying the `options.env` file. See "Changing branches at runtime" below for more info.
+    - During startup, the postgres container will load the `.sql` dump file if it exists, which takes a while. During this process, Atmosphere and Troposphere run Clank tasks that rely on the database so these will fail and re-run until the database is ready.
+    - Optionally change repositories and branches by modifying the `options.env` file. See "Changing branches at runtime" below for more info.
 
 Gracefully shut down containers with `Ctrl+c`. Press it again to kill containers.
+
 Or kill all containers with `docker-compose kill`.
+
 Delete all containers when you are done with `docker-compose rm`.
+
 Delete all unattached volumes with `docker volume prune`.
 
 
