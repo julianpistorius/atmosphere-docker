@@ -21,13 +21,17 @@ sudo chmod +x /usr/local/bin/docker-compose
 ```
 
 
-## Quickstart
-1. Copy `atmo-local` to the base of this directory and fill out necessary variables
-1. `./scripts/setup.sh` to copy atmo-local to each container's build directory
+## Getting started
+1. Copy `atmo-local` to the base of this directory and fill out necessary variables (**see atmo-local section below**)
 1. `docker-compose build` to build all containers. This step will take a while the first time it is run, but will be quicker after that
 1. `docker-compose up` to start all containers (use the `-d` option to start containers in the background)
+  - During startup, the postgres container will load the `.sql` dump file if it exists, which takes a while. During this process, Atmosphere and Troposphere run Clank tasks that rely on the database so these will fail and re-run until the database is ready.
+  - Optionally change repositories and branches by modifying the `options.env` file. See "Changing branches at runtime" below for more info.
 
 Gracefully shut down containers with `Ctrl+c`. Press it again to kill containers.
+Or kill all containers with `docker-compose kill`.
+Delete all containers when you are done with `docker-compose rm`.
+Delete all unattached volumes with `docker volume prune`.
 
 
 ## atmo-local
@@ -46,6 +50,8 @@ GUACAMOLE_SECRET_KEY: "so-secret"
 GUACAMOLE_SERVER_URL: "http://guacamole:8080/guacamole"
 ```
 
+Change all occurrences of `/vagrant` to `{{ HOME }}`.
+
 
 ##### Optional
 Add the following lines to use mock authentication with your username:
@@ -54,12 +60,19 @@ AUTH_ENABLE_MOCK: True
 AUTH_MOCK_USER: "calvinmclean"
 ```
 
-If you want to populate your database with production data, follow the directions in the `atmo-local` repository to download a sanitary sql dump and put it in `atmo-local` directory. **Make sure your containers are only locally accessible if you are doing this!!!**
+If you want to populate your database with production data, follow the directions in the `atmo-local` repository to download a sanitary sql dump and put it in the `./postgres` directory. **Make sure your containers are only locally accessible if you are doing this!!!**
 
-The database file will be picked up and used by the postgres container when you run `docker-compose up` after using `./scripts/setup.sh`
+The database file will be picked up and used by the postgres container when you run `docker-compose up`.
 
 
 ## Testing and development workflow
+Between rebuilds, you should run the following commands to clear existing containers and volumes:
+```
+docker-compose rm
+docker volume prune -f
+```
+
+#### Changinig branches on the build
 You will most likely want to use `atmosphere-docker` with branches other than `cyverse/master`.
 
 Usually, you would specify the Atmosphere and Troposphere versions in the `atmo-local` variables file, but I wanted to be able to specify the version with a build argument for convenience, so the variables in the file **will always be overridden by the default build arg in Docker, 'master', or the build arg specified when building the containers.**
@@ -82,14 +95,19 @@ docker-compose build --build-arg ATMO_BRANCH=v31 TROPO_BRANCH=v31 atmosphere tro
 
 Please offer feedback on this choice because I am not sure I like the inconsistency that it causes, but it allows quick and easy builds of specific versions without messing with the vars in the atmo-local file.
 
-These same variables are available as run-time environment variables. If they are filled out in `options.env`, the Atmosphere and Troposphere entrypoints will re-run configure and manage in order to use the new branches. **I am not sure if this works all the time, or only for branches with small differences.**
+#### Changing branches at runtime
+**This feature is WIP so I am not yet sure if this works all the time, or only for branches with small differences.**
 
+The same variables above are available as runtime environment variables. If they are filled out in `options.env`, the Atmosphere and Troposphere entrypoints will run uwsgi configure and django manage in order to use the new branches.
+
+
+#### Preserving containers/images on rebuild
 Now, you will probably want to rebuild on a new branch but you may not want to overwrite the existing image so you can easily jump back and forth.
-When you build a container it is created with the name: `atmospheredocker_<service>:latest`. So when you rebuild, that image will be overwritten. The best solution to this is to change the tags on your existing images:
+When you build a container it is created with the name: `atmosphere-docker_<service>:latest`. So when you rebuild, that image will be overwritten. The best solution to this is to change the tags on your existing images:
 ```
-docker tag atmospheredocker_atmosphere:latest atmospheredocker_atmosphere:<new_tag>
-docker tag atmospheredocker_troposphere:latest atmospheredocker_troposphere:<new_tag>
-docker tag atmospheredocker_nginx:latest atmospheredocker_nginx:<new_tag>
+docker tag atmosphere-docker_atmosphere:latest atmosphere-docker_atmosphere:<new_tag>
+docker tag atmosphere-docker_troposphere:latest atmosphere-docker_troposphere:<new_tag>
+docker tag atmosphere-docker_nginx:latest atmosphere-docker_nginx:<new_tag>
 ```
 
 However, a simpler solution is to rebuild the Docker-Compose project using a different project name:
@@ -98,40 +116,23 @@ docker-compose -p <other_name> build
 ```
 
 Another situation is that you want to rebuild from a different branch and you want to save the exact state of your existing container you can use `docker commit` to create an image from that container:
+```
+docker commit atmosphere-docker_atmosphere_1 atmosphere-docker_atmosphere:<tag>
+```
+
+Then, when you switch back to the committed image, just change the tag as shown above.
+
 **Note: If you just want to preserve the state of your database, this is no longer necessary as long as you don't delete the postgres container.** Just delete the other containers and re-run `docker-compose up`.
-```
-docker commit atmospheredocker_atmosphere_1 atmospheredocker_atmosphere:<tag>
-```
-
-However, what about the volumes and how does this compose? Well, it doesn't. So I created a script to commit the images and copy the volumes, and added an alternate docker-compose file to run the backups. Run the following with or without docker-compose running:
-```
-./scripts/alt.sh
-docker-compose -f docker-compose-alt.yml up
-```
-
-This creates:
-  - image: `alt_atmo`
-  - image: `alt_tropo`
-  - image: `alt_nginx`
-  - image: `alt_postgres`
-  - container: `atmospheredocker_atmosphere-alt_1`
-  - container: `atmospheredocker_troposphere-alt_1`
-  - container: `atmospheredocker_nginx-alt_1`
-  - container: `atmospheredocker_postgres-alt_1`
-  - volume: `alt_env`
-  - volume: `alt_sockets`
-  - volume: `alt_tropo`
-
-Use `./scripts/alt-cleanup.sh` to remove these containers, images, and volumes.
 
 
 ## Containers/Services
 - [Atmosphere](https://github.com/cyverse/atmosphere)
-  - Entrypoint starts uWSGI, celeryd, redis-server
+  - Entrypoint finishes Atmosphere setup and starts uWSGI, celeryd, redis-server
 - [Troposphere](https://github.com/cyverse/troposphere)
-  - Entrypoint starts uWSGI
+  - Entrypoint finishes Troposphere setup and starts uWSGI
 - [Guacamole & guacd](https://guacamole.apache.org/)
 - Nginx
+  - Entrypoint finishes Nginx setup and adds certs, then starts Nginx
 - [Postgres](https://hub.docker.com/_/postgres/)
 
 
@@ -142,56 +143,30 @@ In order to get Guacamole working with `atmosphere-ansible`, you have to change 
 
 
 ## Logs
-Logs from Atmosphere, nginx, and celery are located in `./logs`. It looks like this:
+Logs from Atmosphere, Troposphere, Nginx, and Celery are located in `./logs`. It looks like this:
 ```
 logs/
 ├── atmosphere
-│   ├── atmosphere.log
-│   ├── atmosphere_api.log
-│   ├── atmosphere_auth.log
-│   ├── atmosphere_deploy.log
-│   ├── atmosphere_email.log
-│   └── atmosphere_status.log
+│   ├── atmosphere.log
+│   ├── atmosphere_api.log
+│   ├── atmosphere_auth.log
+│   ├── atmosphere_deploy.log
+│   ├── atmosphere_email.log
+│   └── atmosphere_status.log
 ├── celery
-│   ├── atmo
-│   │   ├── atmosphere-deploy.log
-│   │   ├── atmosphere-node.log
-│   │   ├── beat.log
-│   │   └── imaging.log
-│   └── tropo
-│       ├── atmosphere-deploy.log
-│       ├── atmosphere-node.log
-│       ├── beat.log
-│       └── imaging.log
-└── nginx
-    ├── access.log
-    └── error.log
+│   └── atmo
+│       ├── atmosphere-deploy.log
+│       ├── atmosphere-fast.log
+│       ├── atmosphere-node.log
+│       ├── beat.log
+│       ├── celery_periodic.log
+│       ├── email.log
+│       └── imaging.log
+├── nginx
+│   ├── access.log
+│   └── error.log
+└── troposphere
+    └── troposphere.log
 
 5 directories, 16 files
 ```
-
-
-## More info
-`./scripts/setup.sh` -- copies `atmo-local/` into each of the sub-directories because each Dockerfile needs it
-
-`./scripts/cleanup.sh` -- deletes `atmo-local/` from each sub-directory (but not the main one at `atmosphere-docker/atmo-local/`) and clears the log directory
-
-Note: Use `./scripts/cleanup.sh --prune` to **ONLY** remove volumes created by `docker-compose up`, without deleting other files
-
-`docker-compose up` -- creates and starts the whole stack
-
-Or you can start individual services: `docker-compose up <SERVICE>`
-
-Other useful `docker-compose` commands:
-  - `docker-compose start <SERVICE>`
-  - `docker-compose stop <SERVICE>`
-  - `docker-compose restart <SERVICE>`
-  - `docker-compose kill <SERVICE>`
-  - `docker-compose build <SERVICE>`
-  These can all be used without the <SERVICE> argument to perform the command on the whole stack
-
-Inside the Dockerfiles, [Clank](https://github.com/cyverse/clank) is used to setup various parts of the stack. Note that the [`app-alter-kernel-for-imaging`](https://github.com/cyverse/clank/tree/master/roles/app-alter-kernel-for-imaging) is disabled because Docker does not allow kernel operations.
-
-
-#### Variables
-Define variables in the `atmo-local/` directory before running `./scripts/setup.sh`
