@@ -1,0 +1,14 @@
+---
+
+- name: Setup celery and uwsgi for Atmosphere
+  hosts: atmosphere
+  roles:
+    - { role: setup-celery }
+    - { role: configure-uwsgi,
+        APP_NAME: 'atmosphere',
+        APP_ENV_VARS: ["DJANGO_SETTINGS_MODULE=atmosphere.settings"],
+        APP_SRC_DIR: "/opt/dev/atmosphere",
+        APP_VIRTUAL_ENV_DIR : "/opt/env/atmosphere",
+        APP_MODULE: "atmosphere.wsgi",
+        NUM_PROCESSES: "24",
+        AUTORELOAD: True }

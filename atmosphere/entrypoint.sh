@@ -37,13 +37,10 @@ if [[ -n $ANSIBLE_BRANCH ]]; then
   git checkout $ANSIBLE_BRANCH
 fi
 
-# If branch was changed, re-run ini config
-if [[ -n $ANSIBLE_BRANCH ]] || [[ -n $ATMO_BRANCH ]]; then
-  source /opt/dev/clank_workspace/clank_env/bin/activate
-  cd /opt/dev/clank_workspace/clank
-  echo "ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-  ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
-fi
+source /opt/dev/clank_workspace/clank_env/bin/activate
+cd /opt/dev/clank_workspace/clank
+echo "ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
+ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
 # Start services
 service redis-server start

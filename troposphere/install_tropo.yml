@@ -1,0 +1,14 @@
+---
+
+- name: Setup uwsgi for Troposphere
+  hosts: troposphere
+  roles:
+    - { role: configure-uwsgi,
+        APP_NAME: 'troposphere',
+        APP_ENV_VARS: ["DJANGO_SETTINGS_MODULE=troposphere.settings"],
+        APP_MODULE: 'troposphere.wsgi',
+        APP_SRC_DIR: "/opt/dev/troposphere",
+        APP_VIRTUAL_ENV_DIR : "/opt/env/troposphere",
+        APP_WORKER_MAX_CONCURRENT_REQUESTS: 100,
+        NUM_PROCESSES: "12",
+        AUTORELOAD: True }

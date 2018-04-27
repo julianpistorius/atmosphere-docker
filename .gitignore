@@ -1,3 +1,4 @@
 atmo-local/
 logs/
 keys/
+*.sql

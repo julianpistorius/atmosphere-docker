@@ -57,29 +57,37 @@ RUN mkdir -p /run/uwsgi/app/troposphere /var/log/uwsgi && \
 # Run Clank ansible
 WORKDIR $CLANK_WORKSPACE/clank
 
-# Add variables files
-ADD atmo-local $CLANK_WORKSPACE/
-
 # Import args before cloning branch
 ARG TROPO_REPO='cyverse'
 ARG TROPO_BRANCH='master'
 
+# Clone repos and pip install requirements
+RUN mkdir /opt/env && \
+    virtualenv /opt/env/troposphere
+RUN git clone -b $TROPO_BRANCH https://github.com/$TROPO_REPO/troposphere.git /opt/dev/troposphere
+RUN source /opt/env/troposphere/bin/activate && pip install -r /opt/dev/troposphere/requirements.txt
+
+# Config logging
+RUN mkdir /var/tmp/django_cache/ && \
+    touch /opt/dev/troposphere/logs/troposphere.log
+
+# Set webserver permissions
+RUN chown -R www-data:www-data /opt/dev/troposphere && \
+    chmod g+rw /opt/dev/troposphere && \
+    chown -R www-data:www-data /var/tmp/django_cache/ && \
+    chmod g+rw /var/tmp/django_cache/
+
+COPY install_tropo.yml $CLANK_WORKSPACE/clank/playbooks/install_tropo.yml
 RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    ansible-playbook playbooks/deploy_troposphere.yml             \
-    -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local \
-    -e troposphere_github_repo=https://github.com/$TROPO_REPO/troposphere.git \
-    -e troposphere_github_branch=$TROPO_BRANCH                    \
-    --skip-tags=dependencies,database,manage-collectstatic,manage-migrate,theme,npm
+    ansible-playbook playbooks/install_tropo.yml
 
-RUN sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/troposphere/variables.ini && \
-    /opt/env/troposphere/bin/python /opt/dev/troposphere/configure
-
-RUN apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Prepare entrypoint
-ADD tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
-ADD tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
-ADD tropo_final.yml $CLANK_WORKSPACE/clank/playbooks/tropo_final.yml
-ADD entrypoint.sh /root/entrypoint.sh
+COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
+COPY tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
+COPY tropo_final.yml $CLANK_WORKSPACE/clank/playbooks/tropo_final.yml
+COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
