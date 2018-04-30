@@ -29,6 +29,7 @@ RUN apt-get update && \
       python-setuptools \
       python-tk \
       redis-server \
+      ssh \
       sudo \
       swig \
       ufw \
