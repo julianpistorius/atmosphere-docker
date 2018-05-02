@@ -7,6 +7,23 @@ Entire Atmosphere development environment in Docker Containers using Docker-Comp
 **Also, take a look at the open issues to see what you can expect to go wrong**
 
 
+**Currently, Web Shell connections do not work because the Atmosphere container cannot SSH to the Guacamole container. There are a few ways to get around this that I haven't automated yet:**
+```bash
+# 1. Manually copy the SSH public key to the instance's authorized_keys
+docker exec -ti atmosphere-docker_guacamole_1 bash
+cat /guac_stuff/keys/<USERNAME>/id_rsa_guac.pub
+
+# 2. Enable SSH on the Guacamole container
+docker exec -ti atmosphere-docker_guacamole_1 bash
+apt-get update && apt-get install ssh vim
+service ssh start
+mkdir /root/.ssh
+vim /root/.ssh/authorized_keys # paste in the Atmosphere public key
+# Then change the hosts file in atmosphere-ansible to use 'guacamole' as the Guacamole host
+```
+
+
+
 ## Installing Docker
 ### macOS
 To install Docker on macOS, follow [these instructions](https://store.docker.com/editions/community/docker-ce-desktop-mac). This includes Docker Compose.
