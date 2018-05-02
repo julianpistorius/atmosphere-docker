@@ -90,6 +90,7 @@ RUN apt-get autoremove -y && \
 # Prepare entrypoint
 COPY atmo_setup.yml $CLANK_WORKSPACE/clank/playbooks/atmo_setup.yml
 COPY atmo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/atmo_db_manage.yml
+COPY web_shell_no_gateone.yml /opt/dev/atmosphere-ansible/ansible/playbooks/instance_deploy/41_shell_access.yml
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
