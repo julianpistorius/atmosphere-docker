@@ -33,5 +33,8 @@
     - name: Make sure DATABASE_HOST is set to 'postgres'
       shell: sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/atmosphere/variables.ini
 
+    - name: Make sure ADDITIONAL_ALLOWED_HOSTNAMES includes 'nginx'
+      shell: sed -i 's/^ADDITIONAL_ALLOWED_HOSTNAMES = \[\]$/ADDITIONAL_ALLOWED_HOSTNAMES = \["nginx"\]/' /opt/dev/atmosphere/variables.ini
+
     - name: run generate script for app
       shell: '/opt/env/atmo/bin/python /opt/dev/atmosphere/configure'

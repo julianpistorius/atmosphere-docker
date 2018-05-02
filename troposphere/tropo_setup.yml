@@ -14,5 +14,14 @@
     - name: Make sure DATABASE_HOST is set to 'postgres'
       shell: sed -i 's/^DATABASE_HOST = ""$/DATABASE_HOST = "postgres"/' /opt/dev/troposphere/variables.ini
 
+    - name: Make sure ADDITIONAL_ALLOWED_HOSTNAMES has 'nginx'
+      shell: sed -i 's/^ADDITIONAL_ALLOWED_HOSTNAMES = \[\]$/ADDITIONAL_ALLOWED_HOSTNAMES = \["nginx"\]/' /opt/dev/troposphere/variables.ini
+
+    - name: Make sure API_SERVER is set to 'nginx' by hard-coding web_desktop.py
+      shell: sed -i 's/^            api_root=settings.API_V2_ROOT,$/            api_root="https\:\/\/nginx\/api\/v2",/' /opt/dev/troposphere/troposphere/views/web_desktop.py
+
+    - name: Fix Guacamole URL with hard-coding
+      shell: sed -i 's/^    url = data.get('token_url')$/    url = data.get('token_url').replace("guacamole","localhost",1)/' /opt/dev/troposphere/troposphere/views/web_desktop.py
+
     - name: run generate script for app
       shell: '/opt/env/troposphere/bin/python /opt/dev/troposphere/configure'
