@@ -21,23 +21,14 @@ if [[ -n $TROPO_BRANCH ]]; then
   git checkout $TROPO_BRANCH
 fi
 
-# re-configure ini config
 source /opt/dev/clank_workspace/clank_env/bin/activate
 cd /opt/dev/clank_workspace/clank
+
 echo "ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
-# Wait for postgres and run playbook until it works
-sleep 30
-source /opt/dev/clank_workspace/clank_env/bin/activate
-cd /opt/dev/clank_workspace/clank
 echo "ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
-while [[ $? != 0 ]]; do
-  sleep 15
-  echo "ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-  ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
-done
 
 echo "ansible-playbook playbooks/tropo_final.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/tropo_final.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
