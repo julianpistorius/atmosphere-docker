@@ -60,7 +60,7 @@ See atmo-local repository in GitLab for more information on setting up the atmo-
 
 
 ##### Required
-Set these variables in `atmo-local/clank_init/build_env/variables.yml@local`
+Set these variables in `atmo-local/clank_init/build_env/variables.yml@local`:
 ```
 SERVER_NAME: "localhost"
 HOME: /opt/dev/clank_workspace
@@ -71,6 +71,22 @@ GUACAMOLE_SERVER_URL: "http://guacamole:8080/guacamole"
 ```
 
 Change all occurrences of `/vagrant` to `{{ HOME }}`.
+
+Now for atmosphere-ansible requirements, change `atmo-local/clank_init/atmosphere-ansible/group_vars/all`:
+```
+GUACAMOLE_SERVER_IP: 0.0.0.0/0.0.0.0
+```
+
+This will allow VNC connections from anywhere, which is necessary since the Guacamole container will have unpredictable IP.
+
+Also change `atmo-local/clank_init/atmosphere-ansible/hosts`:
+```
+[gateone-hosts]
+guac_server ansible_host=guacamole
+localhost ansible_connection=local
+```
+
+This tells ansible to use the local connection instead of SSH when running on `localhost`, which is necessary for getting Guacamole SSH keys.
 
 
 ##### Optional

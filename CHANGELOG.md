@@ -62,6 +62,7 @@ None.
 - All scripts that are no longer useful.
 - `alt` scripts may have been useful, but I think they were more confusing than they were worth.
 
+
 ---
 ## [PR #6: Use wait_for ansible module instead of sleep loop](https://github.com/cyverse/atmosphere-docker/pull/6) - 2018-05-10
 ### Added
@@ -69,6 +70,19 @@ None.
 
 ### Changed
 - Use ansible's `wait_for` module in the entrypoint playbooks instead of a sleep loop. This improved readability and startup time.
+
+### Removed
+None.
+
+
+---
+## [PR #7: Link Guacamole and Atmosphere for Web Shell access](https://github.com/cyverse/atmosphere-docker/pull/7) - 2018-05-16
+### Added
+- Named volume used by Guacamole and Atmosphere for storing SSH keys
+- Use local connection instead of SSH on role `sshkey-host-access`
+
+### Changed
+- Replaced all uses of `sed` in the setup playbooks with `lineinfile`
 
 ### Removed
 None.

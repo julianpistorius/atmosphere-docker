@@ -23,6 +23,7 @@ services:
     volumes:
       - 'atmo-env:/opt/env/atmo:rw'
       - 'sockets:/tmp:rw'
+      - 'guacamole-keys:/etc/guacamole/keys:rw'
       - './logs/celery/atmo:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
       - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
@@ -68,6 +69,7 @@ services:
       GUACD_HOSTNAME: 'guacd'
     volumes:
       - './guacamole:/guac_stuff:rw'
+      - 'guacamole-keys:/guac_stuff/keys:rw'
     ports:
       - '8080:8080'
 
@@ -78,3 +80,4 @@ volumes:
   atmo-env:
   sockets:
   tropo:
+  guacamole-keys:
