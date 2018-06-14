@@ -38,6 +38,7 @@
         path: "/opt/dev/troposphere/troposphere/views/web_desktop.py"
         regexp: "^    url = .+$"
         line: "    url = data.get('token_url').replace('guacamole','localhost',1)"
+        backrefs: yes
 
     - name: run generate script for app
       shell: '/opt/env/troposphere/bin/python /opt/dev/troposphere/configure'
