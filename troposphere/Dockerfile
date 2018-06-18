@@ -40,9 +40,12 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
+ARG CLANK_REPO='cyverse'
+ARG CLANK_BRANCH='master'
+
 # Prep Clank git repo and virtualenv; install pip requirements
 RUN mkdir -p $CLANK_WORKSPACE /root/.ssh
-RUN git clone --depth 1 https://github.com/cyverse/clank.git $CLANK_WORKSPACE/clank && \
+RUN git clone --depth 1 -b $CLANK_BRANCH https://github.com/$CLANK_REPO/clank.git $CLANK_WORKSPACE/clank && \
     pip install --upgrade pip==9.0.3 virtualenv && \
     virtualenv $CLANK_WORKSPACE/clank_env
 
