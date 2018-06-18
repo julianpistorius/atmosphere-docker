@@ -86,3 +86,15 @@ None.
 
 ### Removed
 None.
+
+
+---
+## [PR #8: Allow changing Clank remote and branch during build](https://github.com/cyverse/atmosphere-docker/pull/8) - 2018-06-18
+### Added
+None.
+
+### Changed
+- Add $CLANK_REPO and $CLANK_BRANCH to Docker Compose file and the Atmosphere, Troposphere, and Nginx containers
+
+### Removed
+None.

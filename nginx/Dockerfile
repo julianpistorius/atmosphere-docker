@@ -18,9 +18,12 @@ RUN apt-get update && \
       python-dev && \
     rm -rf /var/lib/apt/lists/*
 
+ARG CLANK_REPO='cyverse'
+ARG CLANK_BRANCH='master'
+
 # Prep Clank git repo and virtualenv; install pip requirements
 RUN mkdir -p $CLANK_WORKSPACE /root/.ssh
-RUN git clone --depth 1 https://github.com/cyverse/clank.git $CLANK_WORKSPACE/clank && \
+RUN git clone --depth 1 -b $CLANK_BRANCH https://github.com/$CLANK_REPO/clank.git $CLANK_WORKSPACE/clank && \
     pip install --upgrade pip==9.0.3 virtualenv && \
     virtualenv $CLANK_WORKSPACE/clank_env
 
@@ -36,17 +39,8 @@ RUN cp $CLANK_WORKSPACE/clank/roles/tls-cert/vars/Ubuntu.yml $CLANK_WORKSPACE/cl
 
 # Cleanup
 RUN rm /etc/nginx/sites-enabled/default
-# RUN apt-get remove -y \
-#       apt-transport-https \
-#       git \
-#       python \
-#       python-pip \
-#       python-dev && \
-#     apt-get autoremove -y && \
-#     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 443
-# CMD ["nginx", "-g", "daemon off;"]
 CMD source $CLANK_WORKSPACE/clank_env/bin/activate && \
     ansible-playbook playbooks/configure_nginx.yml \
     -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local && \
