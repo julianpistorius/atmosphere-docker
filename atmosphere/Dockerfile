@@ -38,8 +38,8 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ARG CLANK_REPO='cyverse'
-ARG CLANK_BRANCH='master'
+ARG CLANK_REPO
+ARG CLANK_BRANCH
 
 # Prep Clank git repo and virtualenv; install pip requirements
 RUN mkdir -p $CLANK_WORKSPACE /root/.ssh
@@ -59,10 +59,10 @@ RUN mkdir -p /run/uwsgi/app/atmosphere /var/log/uwsgi && \
 WORKDIR $CLANK_WORKSPACE/clank
 
 # Import args before cloning branches
-ARG ATMO_REPO='cyverse'
-ARG ATMO_BRANCH='master'
-ARG ANSIBLE_REPO='cyverse'
-ARG ANSIBLE_BRANCH='master'
+ARG ATMO_REPO
+ARG ATMO_BRANCH
+ARG ANSIBLE_REPO
+ARG ANSIBLE_BRANCH
 
 # Clone repos and pip install requirements
 RUN mkdir /opt/env && \

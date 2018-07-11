@@ -18,8 +18,8 @@ RUN apt-get update && \
       python-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ARG CLANK_REPO='cyverse'
-ARG CLANK_BRANCH='master'
+ARG CLANK_REPO
+ARG CLANK_BRANCH
 
 # Prep Clank git repo and virtualenv; install pip requirements
 RUN mkdir -p $CLANK_WORKSPACE /root/.ssh

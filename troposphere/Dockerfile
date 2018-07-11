@@ -40,8 +40,8 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ARG CLANK_REPO='cyverse'
-ARG CLANK_BRANCH='master'
+ARG CLANK_REPO
+ARG CLANK_BRANCH
 
 # Prep Clank git repo and virtualenv; install pip requirements
 RUN mkdir -p $CLANK_WORKSPACE /root/.ssh
@@ -61,8 +61,8 @@ RUN mkdir -p /run/uwsgi/app/troposphere /var/log/uwsgi && \
 WORKDIR $CLANK_WORKSPACE/clank
 
 # Import args before cloning branch
-ARG TROPO_REPO='cyverse'
-ARG TROPO_BRANCH='master'
+ARG TROPO_REPO
+ARG TROPO_BRANCH
 
 # Clone repos and pip install requirements
 RUN mkdir /opt/env && \
