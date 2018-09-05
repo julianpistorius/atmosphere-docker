@@ -10,5 +10,5 @@
         APP_SRC_DIR: "/opt/dev/atmosphere",
         APP_VIRTUAL_ENV_DIR : "/opt/env/atmosphere",
         APP_MODULE: "atmosphere.wsgi",
-        NUM_PROCESSES: "24",
+        NUM_PROCESSES: "4",
         AUTORELOAD: True }
