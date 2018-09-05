@@ -5,7 +5,7 @@
         TLS_CREATE_SELFSIGNED: false,
         TLS_COMMON_NAME: 'localhost' }
     - { role: configure-nginx,
-        SERVER_URL: "{{ nginx_server_url }}",
+        SERVER_URL: "https://{{ server_name }}",
         SITE_SERVER_NAME: "{{ server_name }}",
         LOCATIONS: "{{ nginx_locations }}",
         SSL_KEY: "{{ TLS_PRIVKEY_PATH }}",
