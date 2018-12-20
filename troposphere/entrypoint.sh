@@ -24,13 +24,21 @@ fi
 source /opt/dev/clank_workspace/clank_env/bin/activate
 cd /opt/dev/clank_workspace/clank
 
+cp /opt/inis/troposphere.ini /opt/dev/troposphere/variables.ini
+/opt/env/troposphere/bin/python /opt/dev/troposphere/configure
+
 echo "ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
 echo "ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
-echo "ansible-playbook playbooks/tropo_final.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-ansible-playbook playbooks/tropo_final.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+mkdir /opt/dev/troposphere/troposphere/tropo-static
+/opt/env/troposphere/bin/python /opt/dev/troposphere/manage.py collectstatic --noinput --settings=troposphere.settings --pythonpath=/opt/dev/troposphere
+/opt/env/troposphere/bin/python /opt/dev/troposphere/manage.py migrate --noinput --settings=troposphere.settings --pythonpath=/opt/dev/troposphere
 
-sudo su -l www-data -s /bin/bash -c "UWSGI_DEB_CONFNAMESPACE=app UWSGI_DEB_CONFNAME=troposphere /opt/env/atmo/bin/uwsgi --ini /usr/share/uwsgi/conf/default.ini --ini /etc/uwsgi/apps-enabled/troposphere.ini"
+cd /opt/dev/troposphere
+npm install --unsafe-perm
+npm run build --production
+
+sudo su -l www-data -s /bin/bash -c "UWSGI_DEB_CONFNAMESPACE=app UWSGI_DEB_CONFNAME=troposphere /opt/env/troposphere/bin/uwsgi --ini /usr/share/uwsgi/conf/default.ini --ini /etc/uwsgi/apps-enabled/troposphere.ini"

@@ -1,30 +1,7 @@
 ---
-- name: Genereate Troposphere ini configs
-  hosts: troposphere
-  roles:
-    - { role: app-generate-ini-config,
-        template_vars: "{{ TROPO }}",
-        APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
-        tags: ['troposphere', 'generate-config'] }
-
-- name: Make sure DATABASE_HOST is set to 'postgres'
+- name: Fix web_desktop.py for Docker
   hosts: troposphere
   tasks:
-    - name: Make sure DATABASE_HOST is set to 'postgres'
-      lineinfile:
-        state: present
-        path: '/opt/dev/troposphere/variables.ini'
-        regexp: '^DATABASE_HOST = ""$'
-        line: 'DATABASE_HOST = "postgres"'
-
-    - name: Make sure ADDITIONAL_ALLOWED_HOSTNAMES has 'nginx'
-      lineinfile:
-        state: present
-        path: "/opt/dev/troposphere/variables.ini"
-        regexp: '^ADDITIONAL_ALLOWED_HOSTNAMES = \[\]'
-        line: "ADDITIONAL_ALLOWED_HOSTNAMES = ['nginx']"
-
     - name: Make sure API_SERVER is set to 'nginx' by hard-coding web_desktop.py
       lineinfile:
         state: present
@@ -40,6 +17,3 @@
         regexp: "^    url = .+$"
         line: "    url = data.get('token_url').replace('guacamole','localhost',1)"
         backrefs: yes
-
-    - name: run generate script for app
-      shell: '/opt/env/troposphere/bin/python /opt/dev/troposphere/configure'

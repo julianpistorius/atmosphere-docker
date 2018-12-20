@@ -23,7 +23,7 @@ services:
         CLANK_REPO: 'cyverse'
         CLANK_BRANCH: 'master'
     volumes:
-      - 'atmo-env:/opt/env/atmo:rw'
+      - './inis:/opt/inis:ro'
       - 'sockets:/tmp:rw'
       - 'guacamole-keys:/etc/guacamole/keys:rw'
       - './logs/celery/atmo:/var/log/celery:rw'
@@ -42,7 +42,7 @@ services:
         CLANK_REPO: 'cyverse'
         CLANK_BRANCH: 'master'
     volumes:
-      - 'atmo-env:/opt/env/atmo:rw'
+      - './inis:/opt/inis:ro'
       - 'sockets:/tmp:rw'
       - 'tropo:/opt/dev/troposphere:rw'
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
@@ -84,7 +84,6 @@ services:
     image: 'guacamole/guacd:0.9.14'
 
 volumes:
-  atmo-env:
   sockets:
   tropo:
   guacamole-keys:

@@ -90,7 +90,6 @@ RUN apt-get autoremove -y && \
 # Prepare entrypoint
 COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
 COPY tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
-COPY tropo_final.yml $CLANK_WORKSPACE/clank/playbooks/tropo_final.yml
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]

@@ -1,41 +1,5 @@
 #!/bin/bash
-
-echo "-------------------------------------------------------------------------"
-echo "ENVIRONMENT:"
-echo "ATMO_REPO: $ATMO_REPO"
-echo "ATMO_BRANCH: $ATMO_BRANCH"
-echo "ANSIBLE_REPO: $ANSIBLE_REPO"
-echo "ANSIBLE_BRANCH: $ANSIBLE_BRANCH"
-echo "-------------------------------------------------------------------------"
-
-# Change branches if necessary
-cd /opt/dev/atmosphere
-if [[ -n $ATMO_REPO ]]; then
-  echo "git remote add $ATMO_REPO https://github.com/$ATMO_REPO/atmosphere.git"
-  git remote add $ATMO_REPO https://github.com/$ATMO_REPO/atmosphere.git
-
-  echo "git fetch $ATMO_REPO"
-  git fetch $ATMO_REPO
-fi
-
-if [[ -n $ATMO_BRANCH ]]; then
-  echo "git checkout $ATMO_BRANCH"
-  git checkout $ATMO_BRANCH
-fi
-
-cd /opt/dev/atmosphere-ansible
-if [[ -n $ANSIBLE_REPO ]]; then
-  echo "git remote add $ANSIBLE_REPO https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git"
-  git remote add $ANSIBLE_REPO https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git
-
-  echo "git fetch $ANSIBLE_REPO"
-  git fetch $ANSIBLE_REPO
-fi
-
-if [[ -n $ANSIBLE_BRANCH ]]; then
-  echo "git checkout $ANSIBLE_BRANCH"
-  git checkout $ANSIBLE_BRANCH
-fi
+MANAGE_CMD="/opt/env/atmo/bin/python /opt/dev/atmosphere/manage.py"
 
 source /opt/dev/clank_workspace/clank_env/bin/activate
 cd /opt/dev/clank_workspace/clank
@@ -43,12 +7,28 @@ cd /opt/dev/clank_workspace/clank
 echo "ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
+cp /opt/inis/atmosphere.ini /opt/dev/atmosphere/variables.ini
+cp /opt/inis/atmosphere-ansible.ini /opt/dev/atmosphere-ansible/variables.ini
+/opt/env/atmo/bin/python /opt/dev/atmosphere/configure
+/opt/env/atmo/bin/python /opt/dev/atmosphere-ansible/configure
+
 service redis-server start
 service celerybeat start
 service celeryd start
 
+# Wait for DB to be active
 echo "ansible-playbook playbooks/atmo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/atmo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+
+# Finish Django DB setup
+mkdir /opt/dev/atmosphere/static
+$MANAGE_CMD collectstatic --noinput --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere
+$MANAGE_CMD migrate --noinput --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere
+$MANAGE_CMD loaddata --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere /opt/dev/atmosphere/core/fixtures/provider.json
+$MANAGE_CMD loaddata --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere /opt/dev/atmosphere/core/fixtures/quota.json
+$MANAGE_CMD loaddata --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere /opt/dev/atmosphere/core/fixtures/pattern_match.json
+$MANAGE_CMD loaddata --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere /opt/dev/atmosphere/core/fixtures/boot_script.json
+$MANAGE_CMD createcachetable --settings=atmosphere.settings --pythonpath=/opt/dev/atmosphere atmosphere_cache_requests
 
 chmod 600 /opt/dev/atmosphere/extras/ssh/id_rsa
 sudo su -l www-data -s /bin/bash -c "UWSGI_DEB_CONFNAMESPACE=app UWSGI_DEB_CONFNAME=atmosphere /opt/env/atmo/bin/uwsgi --ini /usr/share/uwsgi/conf/default.ini --ini /etc/uwsgi/apps-enabled/atmosphere.ini"

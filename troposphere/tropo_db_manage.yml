@@ -20,19 +20,3 @@
         login_user: 'atmo_app'
         login_host: 'postgres'
         login_password: 'atmosphere'
-
-- name: Finish Troposphere database setup
-  hosts: troposphere
-  roles:
-    - { role: app-django-manage-collectstatic,
-        APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
-        STATIC_DIR_PATH: 'troposphere/tropo-static',
-        DJANGO_SETTINGS_MODULE: 'troposphere.settings',
-        tags: ['troposphere', 'manage-collectstatic']}
-
-    - { role: app-django-manage-migrate,
-        APP_BASE_DIR: "{{ TROPOSPHERE_LOCATION | default(troposphere_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_TROPOSPHERE | default(troposphere_virtualenv_path) }}",
-        DJANGO_SETTINGS_MODULE: 'troposphere.settings',
-        tags: ['troposphere', 'migrate', 'manage-migrate'] }

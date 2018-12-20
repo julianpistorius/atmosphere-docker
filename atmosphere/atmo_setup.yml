@@ -1,13 +1,7 @@
 ---
-- name: Generate ini configs for atmosphere and atmosphere-ansible
+- name: Setup SSH keys and ansible deployment files
   hosts: atmosphere
   roles:
-    - { role: app-generate-ini-config,
-        template_vars: "{{ ATMO }}",
-        APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_virtualenv_path) }}",
-        tags: ['atmosphere', 'generate-config'] }
-
     - { role: app-setup-ssh-keys,
         APP_BASE_DIR: "{{ ATMOSPHERE_LOCATION | default(atmosphere_directory_path) }}",
         SSH_PRIV_KEY: "{{ ID_RSA | default('') }}",
@@ -20,29 +14,3 @@
         INSTANCE_DEPLOY_AUTOMATION_HOSTS_FILE: "{{ ANSIBLE_HOSTS_FILE | default('') }}",
         INSTANCE_DEPLOY_AUTOMATION_GROUP_VARS_FOLDER: "{{ ANSIBLE_GROUP_VARS_FOLDER | default('') }}",
         tags: ['atmosphere', 'ansible-deploy'] }
-
-    - { role: app-generate-ini-config,
-        template_vars: "{{ ATMOSPHERE_ANSIBLE }}",
-        APP_BASE_DIR: "{{ ANSIBLE_DEPLOY_LOCATION | default(atmosphere_ansible_directory_path) }}",
-        VIRTUAL_ENV: "{{ VIRTUAL_ENV_ATMOSPHERE | default(atmosphere_ansible_virtualenv_path) }}",
-        tags: ['atmosphere', 'ansible-deploy'] }
-
-- name: Make sure DATABASE_HOST is set to 'postgres'
-  hosts: atmosphere
-  tasks:
-    - name: Make sure DATABASE_HOST is set to 'postgres'
-      lineinfile:
-        state: present
-        path: '/opt/dev/atmosphere/variables.ini'
-        regexp: '^DATABASE_HOST = ""$'
-        line: 'DATABASE_HOST = "postgres"'
-
-    - name: Make sure ADDITIONAL_ALLOWED_HOSTNAMES includes 'nginx'
-      lineinfile:
-        state: present
-        path: "/opt/dev/atmosphere/variables.ini"
-        regexp: '^ADDITIONAL_ALLOWED_HOSTNAMES = \[\]'
-        line: "ADDITIONAL_ALLOWED_HOSTNAMES = ['nginx']"
-
-    - name: run generate script for app
-      shell: '/opt/env/atmo/bin/python /opt/dev/atmosphere/configure'
