@@ -44,27 +44,11 @@ services:
     volumes:
       - './inis:/opt/inis:ro'
       - 'sockets:/tmp:rw'
-      - 'tropo:/opt/dev/troposphere:rw'
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
       - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
     env_file: 'options.env'
     depends_on:
       - 'atmosphere'
-
-  nginx:
-    build:
-      context: './nginx'
-      args:
-        CLANK_REPO: 'cyverse'
-        CLANK_BRANCH: 'master'
-    volumes:
-      - 'sockets:/tmp'
-      - 'tropo:/opt/dev/troposphere:rw'
-      - './logs/nginx:/var/log/nginx:rw'
-      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
-    depends_on:
-      - 'atmosphere'
-      - 'troposphere'
     ports:
       - '443:443'
       - '80:80'
@@ -85,5 +69,4 @@ services:
 
 volumes:
   sockets:
-  tropo:
   guacamole-keys:

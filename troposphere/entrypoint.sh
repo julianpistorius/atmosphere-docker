@@ -33,6 +33,10 @@ ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build
 echo "ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
 ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
 
+# Configure and run nginx
+ansible-playbook playbooks/configure_nginx.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+nginx
+
 mkdir /opt/dev/troposphere/troposphere/tropo-static
 /opt/env/troposphere/bin/python /opt/dev/troposphere/manage.py collectstatic --noinput --settings=troposphere.settings --pythonpath=/opt/dev/troposphere
 /opt/env/troposphere/bin/python /opt/dev/troposphere/manage.py migrate --noinput --settings=troposphere.settings --pythonpath=/opt/dev/troposphere

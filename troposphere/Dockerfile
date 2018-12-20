@@ -1,4 +1,4 @@
-# Docker Container for Atmosphere
+# Docker Container for Troposphere
 FROM ubuntu:14.04
 
 # Set environment
@@ -23,6 +23,7 @@ RUN apt-get update && \
       libxml2-dev \
       libxslt1-dev \
       make \
+      nginx \
       nodejs \
       openssl \
       python \
@@ -84,12 +85,16 @@ COPY install_tropo.yml $CLANK_WORKSPACE/clank/playbooks/install_tropo.yml
 RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
     ansible-playbook playbooks/install_tropo.yml
 
+    # Cleanup
 RUN apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
+RUN rm /etc/nginx/sites-enabled/default
+
 
 # Prepare entrypoint
 COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
 COPY tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
+COPY configure_nginx.yml $CLANK_WORKSPACE/clank/playbooks/configure_nginx.yml
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
