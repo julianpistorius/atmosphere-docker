@@ -24,7 +24,6 @@ services:
         CLANK_BRANCH: 'master'
     volumes:
       - './inis:/opt/inis:ro'
-      - 'sockets:/tmp:rw'
       - 'guacamole-keys:/etc/guacamole/keys:rw'
       - './logs/celery/atmo:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
@@ -43,7 +42,6 @@ services:
         CLANK_BRANCH: 'master'
     volumes:
       - './inis:/opt/inis:ro'
-      - 'sockets:/tmp:rw'
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
       - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
     env_file: 'options.env'
@@ -68,5 +66,4 @@ services:
     image: 'guacamole/guacd:0.9.14'
 
 volumes:
-  sockets:
   guacamole-keys:

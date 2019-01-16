@@ -11,4 +11,5 @@
         APP_VIRTUAL_ENV_DIR : "/opt/env/atmosphere",
         APP_MODULE: "atmosphere.wsgi",
         NUM_PROCESSES: "4",
+        APP_SOCK: "0.0.0.0:8080",
         AUTORELOAD: True }
