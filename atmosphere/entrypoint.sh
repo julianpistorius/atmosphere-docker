@@ -17,8 +17,8 @@ service celerybeat start
 service celeryd start
 
 # Wait for DB to be active
-echo "ansible-playbook playbooks/atmo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-ansible-playbook playbooks/atmo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+echo "Waiting for postgres..."
+while ! nc -z postgres 5432; do sleep 5; done
 
 # Finish Django DB setup
 mkdir /opt/dev/atmosphere/static
