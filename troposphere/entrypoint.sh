@@ -5,14 +5,11 @@ chmod 600 /opt/my_key
 echo -e "Host gitlab.cyverse.org\n\tStrictHostKeyChecking no\n\tIdentityFile /opt/my_key" >> ~/.ssh/config
 git clone $SECRETS_REPO $SECRETS_DIR
 
-source /opt/dev/clank_workspace/clank_env/bin/activate
-cd /opt/dev/clank_workspace/clank
-
 cp $SECRETS_DIR/inis/troposphere.ini /opt/dev/troposphere/variables.ini
 /opt/env/troposphere/bin/python /opt/dev/troposphere/configure
 
-echo "ansible-playbook playbooks/tropo_setup.yml -e @$SECRETS_DIR/clank_vars.yml"
-ansible-playbook playbooks/tropo_setup.yml -e @$SECRETS_DIR/clank_vars.yml
+sed -i "s/^            api_root=settings.API_V2_ROOT,$/            api_root\=\'https\:\/\/nginx\/api\/v2\'\,/" /opt/dev/troposphere/troposphere/views/web_desktop.py
+sed -i "s/^    url = .+$/    url = data.get('token_url').replace('guacamole','localhost',1)/" /opt/dev/troposphere/troposphere/views/web_desktop.py
 
 # Configure and run nginx
 . $SECRETS_DIR/tropo_vars.env
