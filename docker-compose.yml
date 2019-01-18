@@ -36,8 +36,6 @@ services:
       args:
         TROPO_REPO: 'cyverse'
         TROPO_BRANCH: 'master'
-        CLANK_REPO: 'cyverse'
-        CLANK_BRANCH: 'master'
     volumes:
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
     env_file: 'secrets.env'

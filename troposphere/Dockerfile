@@ -2,7 +2,6 @@
 FROM ubuntu:14.04
 
 # Set environment
-ENV CLANK_WORKSPACE /opt/dev/clank_workspace
 SHELL ["/bin/bash", "-c"]
 
 # Install dependencies with apt
@@ -33,6 +32,7 @@ RUN apt-get update && \
       python-psycopg2 \
       python-setuptools \
       python-tk \
+      # python-virtualenv \
       ssh \
       sudo \
       swig \
@@ -42,32 +42,20 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ARG CLANK_REPO
-ARG CLANK_BRANCH
-
-# Prep Clank git repo and virtualenv; install pip requirements
-RUN mkdir -p $CLANK_WORKSPACE /root/.ssh
-RUN git clone --depth 1 -b $CLANK_BRANCH https://github.com/$CLANK_REPO/clank.git $CLANK_WORKSPACE/clank && \
-    pip install --upgrade pip==9.0.3 virtualenv && \
-    virtualenv $CLANK_WORKSPACE/clank_env
-
-RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    pip install --no-cache-dir -r $CLANK_WORKSPACE/clank/requirements.txt
+RUN mkdir -p /root/.ssh
 
 # Create PID and log directories for uWSGI
 RUN mkdir -p /run/uwsgi/app/troposphere /var/log/uwsgi && \
     chown -R www-data:www-data /run/uwsgi/app/ /var/log/uwsgi && \
     touch /var/log/uwsgi/troposphere.log
 
-# Run Clank ansible
-WORKDIR $CLANK_WORKSPACE/clank
-
 # Import args before cloning branch
 ARG TROPO_REPO
 ARG TROPO_BRANCH
 
 # Clone repos and pip install requirements
-RUN mkdir /opt/env && \
+RUN pip install --upgrade pip==9.0.3 virtualenv && \
+    mkdir /opt/env && \
     virtualenv /opt/env/troposphere
 RUN git clone -b $TROPO_BRANCH https://github.com/$TROPO_REPO/troposphere.git /opt/dev/troposphere
 RUN source /opt/env/troposphere/bin/activate && pip install -r /opt/dev/troposphere/requirements.txt
@@ -82,9 +70,11 @@ RUN chown -R www-data:www-data /opt/dev/troposphere && \
     chown -R www-data:www-data /var/tmp/django_cache/ && \
     chmod g+rw /var/tmp/django_cache/
 
-COPY install_tropo.yml $CLANK_WORKSPACE/clank/playbooks/install_tropo.yml
-RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    ansible-playbook playbooks/install_tropo.yml
+# Setup uwsgi
+RUN mkdir -p /etc/uwsgi/apps-available
+RUN mkdir -p /etc/uwsgi/apps-enabled
+COPY troposphere.ini /etc/uwsgi/apps-available/
+RUN ln -s /etc/uwsgi/apps-available/troposphere.ini /etc/uwsgi/apps-enabled/troposphere.ini
 
 # Cleanup
 RUN apt-get autoremove -y && \
@@ -97,7 +87,6 @@ COPY nginx/ /etc/nginx/
 RUN ln -s /etc/nginx/sites-available/site.conf /etc/nginx/sites-enabled/site.conf
 
 # Prepare entrypoint
-COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]

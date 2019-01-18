@@ -2,5 +2,4 @@ atmo-local/
 logs/
 keys/
 *.sql
-*.ini
 secrets.env
