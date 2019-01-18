@@ -86,14 +86,18 @@ COPY install_tropo.yml $CLANK_WORKSPACE/clank/playbooks/install_tropo.yml
 RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
     ansible-playbook playbooks/install_tropo.yml
 
-    # Cleanup
+# Cleanup
 RUN apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 RUN rm /etc/nginx/sites-enabled/default
 
+# Setup NGINX
+RUN openssl dhparam -out /etc/ssl/certs/dhparam.pem 1024
+COPY nginx/ /etc/nginx/
+RUN ln -s /etc/nginx/sites-available/site.conf /etc/nginx/sites-enabled/site.conf
+
 # Prepare entrypoint
 COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
-COPY configure_nginx.yml $CLANK_WORKSPACE/clank/playbooks/configure_nginx.yml
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
