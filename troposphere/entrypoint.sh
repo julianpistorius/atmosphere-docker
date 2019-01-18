@@ -14,12 +14,13 @@ cp /opt/dev/atmosphere-docker-secrets/inis/troposphere.ini /opt/dev/troposphere/
 echo "ansible-playbook playbooks/tropo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml"
 ansible-playbook playbooks/tropo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
 
-echo "ansible-playbook playbooks/tropo_db_manage.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml"
-ansible-playbook playbooks/tropo_db_manage.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
-
 # Configure and run nginx
 ansible-playbook playbooks/configure_nginx.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
 nginx
+
+# Wait for DB to be active
+echo "Waiting for postgres..."
+while ! nc -z postgres 5432; do sleep 5; done
 
 mkdir /opt/dev/troposphere/troposphere/tropo-static
 /opt/env/troposphere/bin/python /opt/dev/troposphere/manage.py collectstatic --noinput --settings=troposphere.settings --pythonpath=/opt/dev/troposphere

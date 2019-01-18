@@ -93,7 +93,6 @@ RUN rm /etc/nginx/sites-enabled/default
 
 # Prepare entrypoint
 COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml
-COPY tropo_db_manage.yml $CLANK_WORKSPACE/clank/playbooks/tropo_db_manage.yml
 COPY configure_nginx.yml $CLANK_WORKSPACE/clank/playbooks/configure_nginx.yml
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh

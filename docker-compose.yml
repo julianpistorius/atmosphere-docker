@@ -4,13 +4,13 @@ version: '3'
 services:
 
   postgres:
-    image: postgres:9.6
+    build:
+      context: './postgres'
     environment:
       POSTGRES_USER: 'atmo_app'
       POSTGRES_PASSWORD: 'atmosphere'
       POSTGRES_DB: 'atmo_prod'
-    volumes:
-      - './postgres:/docker-entrypoint-initdb.d'
+      TROPO_DB_NAME: 'troposphere'
 
   atmosphere:
     build:
