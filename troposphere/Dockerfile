@@ -33,6 +33,7 @@ RUN apt-get update && \
       python-psycopg2 \
       python-setuptools \
       python-tk \
+      ssh \
       sudo \
       swig \
       ufw \
@@ -89,7 +90,6 @@ RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
 RUN apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 RUN rm /etc/nginx/sites-enabled/default
-
 
 # Prepare entrypoint
 COPY tropo_setup.yml $CLANK_WORKSPACE/clank/playbooks/tropo_setup.yml

@@ -1,40 +1,24 @@
 #!/bin/bash
 
-echo "-------------------------------------------------------------------------"
-echo "ENVIRONMENT:"
-echo "TROPO_REPO: $TROPO_REPO"
-echo "TROPO_BRANCH: $TROPO_BRANCH"
-echo "-------------------------------------------------------------------------"
-
-# Change branches if necessary
-cd /opt/dev/troposphere
-if [[ -n $TROPO_REPO ]]; then
-  echo "git remote add $TROPO_REPO https://github.com/$TROPO_REPO/troposphere.git"
-  git remote add $TROPO_REPO https://github.com/$TROPO_REPO/troposphere.git
-
-  echo "git fetch $TROPO_REPO"
-  git fetch $TROPO_REPO
-fi
-
-if [[ -n $TROPO_BRANCH ]]; then
-  echo "git checkout $TROPO_BRANCH"
-  git checkout $TROPO_BRANCH
-fi
+echo -e $SSH_KEY > /opt/my_key
+chmod 600 /opt/my_key
+echo -e "Host gitlab.cyverse.org\n\tStrictHostKeyChecking no\n\tIdentityFile /opt/my_key" >> ~/.ssh/config
+git clone $SECRETS_REPO /opt/dev/atmosphere-docker-secrets
 
 source /opt/dev/clank_workspace/clank_env/bin/activate
 cd /opt/dev/clank_workspace/clank
 
-cp /opt/inis/troposphere.ini /opt/dev/troposphere/variables.ini
+cp /opt/dev/atmosphere-docker-secrets/inis/troposphere.ini /opt/dev/troposphere/variables.ini
 /opt/env/troposphere/bin/python /opt/dev/troposphere/configure
 
-echo "ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-ansible-playbook playbooks/tropo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+echo "ansible-playbook playbooks/tropo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml"
+ansible-playbook playbooks/tropo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
 
-echo "ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-ansible-playbook playbooks/tropo_db_manage.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+echo "ansible-playbook playbooks/tropo_db_manage.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml"
+ansible-playbook playbooks/tropo_db_manage.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
 
 # Configure and run nginx
-ansible-playbook playbooks/configure_nginx.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+ansible-playbook playbooks/configure_nginx.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
 nginx
 
 mkdir /opt/dev/troposphere/troposphere/tropo-static

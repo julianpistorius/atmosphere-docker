@@ -23,12 +23,10 @@ services:
         CLANK_REPO: 'cyverse'
         CLANK_BRANCH: 'master'
     volumes:
-      - './inis:/opt/inis:ro'
       - 'guacamole-keys:/etc/guacamole/keys:rw'
       - './logs/celery/atmo:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
-      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
-    env_file: 'options.env'
+    env_file: 'secrets.env'
     depends_on:
       - 'postgres'
 
@@ -41,10 +39,8 @@ services:
         CLANK_REPO: 'cyverse'
         CLANK_BRANCH: 'master'
     volumes:
-      - './inis:/opt/inis:ro'
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
-      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
-    env_file: 'options.env'
+    env_file: 'secrets.env'
     depends_on:
       - 'atmosphere'
     ports:

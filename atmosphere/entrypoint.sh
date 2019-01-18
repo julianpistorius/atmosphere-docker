@@ -4,11 +4,16 @@ MANAGE_CMD="/opt/env/atmo/bin/python /opt/dev/atmosphere/manage.py"
 source /opt/dev/clank_workspace/clank_env/bin/activate
 cd /opt/dev/clank_workspace/clank
 
-echo "ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local"
-ansible-playbook playbooks/atmo_setup.yml -e @$CLANK_WORKSPACE/clank_init/build_env/variables.yml@local
+echo -e $SSH_KEY > /opt/my_key
+chmod 600 /opt/my_key
+echo -e "Host gitlab.cyverse.org\n\tStrictHostKeyChecking no\n\tIdentityFile /opt/my_key" >> ~/.ssh/config
+git clone $SECRETS_REPO /opt/dev/atmosphere-docker-secrets
 
-cp /opt/inis/atmosphere.ini /opt/dev/atmosphere/variables.ini
-cp /opt/inis/atmosphere-ansible.ini /opt/dev/atmosphere-ansible/variables.ini
+echo "ansible-playbook playbooks/atmo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml"
+ansible-playbook playbooks/atmo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
+
+cp /opt/dev/atmosphere-docker-secrets/inis/atmosphere.ini /opt/dev/atmosphere/variables.ini
+cp /opt/dev/atmosphere-docker-secrets/inis/atmosphere-ansible.ini /opt/dev/atmosphere-ansible/variables.ini
 /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
 /opt/env/atmo/bin/python /opt/dev/atmosphere-ansible/configure
 
