@@ -2,7 +2,6 @@
 FROM ubuntu:14.04
 
 # Set environment
-ENV CLANK_WORKSPACE /opt/dev/clank_workspace
 SHELL ["/bin/bash", "-c"]
 
 # Install dependencies with apt
@@ -38,25 +37,10 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ARG CLANK_REPO
-ARG CLANK_BRANCH
-
-# Prep Clank git repo and virtualenv; install pip requirements
-RUN mkdir -p $CLANK_WORKSPACE /root/.ssh
-RUN git clone --depth 1 -b $CLANK_BRANCH https://github.com/$CLANK_REPO/clank.git $CLANK_WORKSPACE/clank && \
-    pip install --upgrade pip==9.0.3 virtualenv && \
-    virtualenv $CLANK_WORKSPACE/clank_env
-
-RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    pip install --no-cache-dir -r $CLANK_WORKSPACE/clank/requirements.txt
-
 # Create PID and log directories for uWSGI
 RUN mkdir -p /run/uwsgi/app/atmosphere /var/log/uwsgi && \
     chown -R www-data:www-data /run/uwsgi/app/ /var/log/uwsgi && \
     touch /var/log/uwsgi/atmosphere.log
-
-# Run Clank ansible
-WORKDIR $CLANK_WORKSPACE/clank
 
 # Import args before cloning branches
 ARG ATMO_REPO
@@ -66,6 +50,7 @@ ARG ANSIBLE_BRANCH
 
 # Clone repos and pip install requirements
 RUN mkdir /opt/env && \
+    pip install --upgrade pip==9.0.3 virtualenv &&\
     virtualenv /opt/env/atmosphere &&\
     ln -s /opt/env/atmosphere/ /opt/env/atmo
 RUN git clone -b $ATMO_BRANCH https://github.com/$ATMO_REPO/atmosphere.git /opt/dev/atmosphere &&\
@@ -83,15 +68,22 @@ RUN chown -R www-data:www-data /opt/dev/atmosphere && \
     chown -R www-data:www-data /var/tmp/django_cache/ && \
     chmod g+rw /var/tmp/django_cache/
 
-COPY install_atmo.yml $CLANK_WORKSPACE/clank/playbooks/install_atmo.yml
-RUN source $CLANK_WORKSPACE/clank_env/bin/activate && \
-    ansible-playbook playbooks/install_atmo.yml
+# Install initd files
+COPY flower.initd /etc/init.d/flower
+COPY celeryd.initd /etc/init.d/celeryd
+COPY celerybeat.initd /etc/init.d/celerybeat
+RUN chmod -R 755 /etc/init.d
+
+# Setup uwsgi
+RUN mkdir -p /etc/uwsgi/apps-available
+RUN mkdir -p /etc/uwsgi/apps-enabled
+COPY atmosphere.ini /etc/uwsgi/apps-available/
+RUN ln -s /etc/uwsgi/apps-available/atmosphere.ini /etc/uwsgi/apps-enabled/atmosphere.ini
 
 RUN apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Prepare entrypoint
-COPY atmo_setup.yml $CLANK_WORKSPACE/clank/playbooks/atmo_setup.yml
 COPY web_shell_no_gateone.yml /opt/dev/atmosphere-ansible/ansible/playbooks/instance_deploy/41_shell_access.yml
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh

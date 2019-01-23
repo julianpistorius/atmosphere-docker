@@ -1,22 +1,31 @@
 #!/bin/bash
 MANAGE_CMD="/opt/env/atmo/bin/python /opt/dev/atmosphere/manage.py"
 
-source /opt/dev/clank_workspace/clank_env/bin/activate
-cd /opt/dev/clank_workspace/clank
-
+# Clone secrets repo
+mkdir ~/.ssh
 echo -e $SSH_KEY > /opt/my_key
 chmod 600 /opt/my_key
 echo -e "Host gitlab.cyverse.org\n\tStrictHostKeyChecking no\n\tIdentityFile /opt/my_key" >> ~/.ssh/config
-git clone $SECRETS_REPO /opt/dev/atmosphere-docker-secrets
+git clone $SECRETS_REPO $SECRETS_DIR
 
-echo "ansible-playbook playbooks/atmo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml"
-ansible-playbook playbooks/atmo_setup.yml -e @/opt/dev/atmosphere-docker-secrets/clank_vars.yml
+# Setup SSH keys
+. $SECRETS_DIR/atmo_vars.env
+mkdir /opt/dev/atmosphere/extras/ssh
+cp $SSH_PRIV_KEY /opt/dev/atmosphere/extras/ssh/id_rsa
+cp $SSH_PUB_KEY /opt/dev/atmosphere/extras/ssh/id_rsa.pub
+echo -e "Host *\n\tIdentityFile /opt/dev/atmosphere/extras/ssh/id_rsa\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" >> ~/.ssh/config
 
-cp /opt/dev/atmosphere-docker-secrets/inis/atmosphere.ini /opt/dev/atmosphere/variables.ini
-cp /opt/dev/atmosphere-docker-secrets/inis/atmosphere-ansible.ini /opt/dev/atmosphere-ansible/variables.ini
+# Setup instance deploy automation
+cp $ANSIBLE_HOSTS_FILE /opt/dev/atmosphere-ansible/ansible/hosts
+cp -r $ANSIBLE_GROUP_VARS_FOLDER /opt/dev/atmosphere-ansible/ansible/group_vars
+
+# Copy ini files
+cp $SECRETS_DIR/inis/atmosphere.ini /opt/dev/atmosphere/variables.ini
+cp $SECRETS_DIR/inis/atmosphere-ansible.ini /opt/dev/atmosphere-ansible/variables.ini
 /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
 /opt/env/atmo/bin/python /opt/dev/atmosphere-ansible/configure
 
+# Start services
 service redis-server start
 service celerybeat start
 service celeryd start

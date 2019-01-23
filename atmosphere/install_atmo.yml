@@ -4,12 +4,3 @@
   hosts: atmosphere
   roles:
     - { role: setup-celery }
-    - { role: configure-uwsgi,
-        APP_NAME: 'atmosphere',
-        APP_ENV_VARS: ["DJANGO_SETTINGS_MODULE=atmosphere.settings"],
-        APP_SRC_DIR: "/opt/dev/atmosphere",
-        APP_VIRTUAL_ENV_DIR : "/opt/env/atmosphere",
-        APP_MODULE: "atmosphere.wsgi",
-        NUM_PROCESSES: "4",
-        APP_SOCK: "0.0.0.0:8080",
-        AUTORELOAD: True }
