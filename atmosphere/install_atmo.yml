@@ -1,6 +1,0 @@
----
-
-- name: Setup celery and uwsgi for Atmosphere
-  hosts: atmosphere
-  roles:
-    - { role: setup-celery }
