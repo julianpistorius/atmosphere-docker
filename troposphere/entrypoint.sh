@@ -8,6 +8,11 @@ git clone $SECRETS_REPO $SECRETS_DIR
 cp $SECRETS_DIR/inis/troposphere.ini /opt/dev/troposphere/variables.ini
 /opt/env/troposphere/bin/python /opt/dev/troposphere/configure
 
+# Allow user to edit/delete logs
+touch /opt/dev/troposphere/logs/troposphere.log
+chown -R www-data:www-data /opt/dev/troposphere/logs
+chmod o+rw /opt/dev/troposphere/logs
+
 sed -i "s/^            api_root=settings.API_V2_ROOT,$/            api_root\=\'https\:\/\/nginx\/api\/v2\'\,/" /opt/dev/troposphere/troposphere/views/web_desktop.py
 sed -i "s/^    url = .+$/    url = data.get('token_url').replace('guacamole','localhost',1)/" /opt/dev/troposphere/troposphere/views/web_desktop.py
 

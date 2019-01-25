@@ -22,7 +22,7 @@ services:
         ANSIBLE_BRANCH: 'master'
     volumes:
       - 'guacamole-keys:/etc/guacamole/keys:rw'
-      - './logs/celery/atmo:/var/log/celery:rw'
+      - './logs/celery:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
     env_file: 'secrets.env'
     depends_on:

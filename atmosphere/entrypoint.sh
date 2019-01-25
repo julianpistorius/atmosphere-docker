@@ -25,10 +25,18 @@ cp $SECRETS_DIR/inis/atmosphere-ansible.ini /opt/dev/atmosphere-ansible/variable
 /opt/env/atmo/bin/python /opt/dev/atmosphere/configure
 /opt/env/atmo/bin/python /opt/dev/atmosphere-ansible/configure
 
+# Allow user to edit/delete logs
+chown www-data:www-data /opt/dev/atmosphere/logs
+chmod o+rw /opt/dev/atmosphere/logs
+
 # Start services
 service redis-server start
 service celerybeat start
 service celeryd start
+
+# Allow user to edit/delete logs
+chown -R www-data:www-data /var/log/celery
+chmod -R o+rw /var/log/celery
 
 # Wait for DB to be active
 echo "Waiting for postgres..."

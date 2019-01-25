@@ -60,15 +60,9 @@ RUN pip install --upgrade pip==9.0.3 virtualenv && \
 RUN git clone -b $TROPO_BRANCH https://github.com/$TROPO_REPO/troposphere.git /opt/dev/troposphere
 RUN source /opt/env/troposphere/bin/activate && pip install -r /opt/dev/troposphere/requirements.txt
 
-# Config logging
-RUN mkdir /var/tmp/django_cache/ && \
-    touch /opt/dev/troposphere/logs/troposphere.log
-
-# Set webserver permissions
+# Set permissions on troposphere
 RUN chown -R www-data:www-data /opt/dev/troposphere && \
-    chmod g+rw /opt/dev/troposphere && \
-    chown -R www-data:www-data /var/tmp/django_cache/ && \
-    chmod g+rw /var/tmp/django_cache/
+    chmod g+rw /opt/dev/troposphere
 
 # Setup uwsgi
 RUN mkdir -p /etc/uwsgi/apps-available

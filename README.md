@@ -36,3 +36,5 @@ Or kill all containers with `docker-compose kill`.
 Delete all containers when you are done with `docker-compose rm`.
 
 Delete all unattached volumes with `docker volume prune`.
+
+**NOTE:** When the `logs/` directory is created by Docker Compose it will be owned by root so you cannot delete it without `sudo`. However, `rm -rf logs` will delete all of the files but the directory structure will remain. If you create the logs directory before running the containers, you can easily delete it.

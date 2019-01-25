@@ -57,16 +57,9 @@ RUN git clone -b $ATMO_BRANCH https://github.com/$ATMO_REPO/atmosphere.git /opt/
     git clone -b $ANSIBLE_BRANCH https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git /opt/dev/atmosphere-ansible
 RUN source /opt/env/atmo/bin/activate && pip install -r /opt/dev/atmosphere/requirements.txt
 
-# Config logging
-RUN mkdir /opt/dev/atmosphere/logs /var/tmp/django_cache/ && \
-    touch /opt/dev/atmosphere/logs/atmosphere.log && \
-    touch /opt/dev/atmosphere/logs/atmosphere_status.log
-
-# Set webserver permissions
+# Set permissions on atmosphere
 RUN chown -R www-data:www-data /opt/dev/atmosphere && \
-    chmod g+rw /opt/dev/atmosphere && \
-    chown -R www-data:www-data /var/tmp/django_cache/ && \
-    chmod g+rw /var/tmp/django_cache/
+    chmod g+rw /opt/dev/atmosphere
 
 # Install initd files
 COPY flower.initd /etc/init.d/flower
