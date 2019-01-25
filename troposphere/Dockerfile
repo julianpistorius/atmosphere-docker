@@ -57,23 +57,23 @@ ARG TROPO_BRANCH
 RUN pip install --upgrade pip==9.0.3 virtualenv && \
     mkdir /opt/env && \
     virtualenv /opt/env/troposphere
-RUN git clone -b $TROPO_BRANCH https://github.com/$TROPO_REPO/troposphere.git /opt/dev/troposphere
-RUN source /opt/env/troposphere/bin/activate && pip install -r /opt/dev/troposphere/requirements.txt
+RUN git clone -b $TROPO_BRANCH https://github.com/$TROPO_REPO/troposphere.git /opt/dev/troposphere && \
+    source /opt/env/troposphere/bin/activate && \
+    pip install -r /opt/dev/troposphere/requirements.txt
 
 # Set permissions on troposphere
 RUN chown -R www-data:www-data /opt/dev/troposphere && \
     chmod g+rw /opt/dev/troposphere
 
 # Setup uwsgi
-RUN mkdir -p /etc/uwsgi/apps-available
-RUN mkdir -p /etc/uwsgi/apps-enabled
+RUN mkdir -p /etc/uwsgi/apps-available /etc/uwsgi/apps-enabled
 COPY troposphere.ini /etc/uwsgi/apps-available/
 RUN ln -s /etc/uwsgi/apps-available/troposphere.ini /etc/uwsgi/apps-enabled/troposphere.ini
 
 # Cleanup
 RUN apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
-RUN rm /etc/nginx/sites-enabled/default
+    rm -rf /var/lib/apt/lists/* && \
+    rm /etc/nginx/sites-enabled/default
 
 # Setup NGINX
 RUN openssl dhparam -out /etc/ssl/certs/dhparam.pem 1024

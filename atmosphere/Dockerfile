@@ -53,9 +53,10 @@ RUN mkdir /opt/env && \
     pip install --upgrade pip==9.0.3 virtualenv &&\
     virtualenv /opt/env/atmosphere &&\
     ln -s /opt/env/atmosphere/ /opt/env/atmo
-RUN git clone -b $ATMO_BRANCH https://github.com/$ATMO_REPO/atmosphere.git /opt/dev/atmosphere &&\
-    git clone -b $ANSIBLE_BRANCH https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git /opt/dev/atmosphere-ansible
-RUN source /opt/env/atmo/bin/activate && pip install -r /opt/dev/atmosphere/requirements.txt
+RUN git clone -b $ATMO_BRANCH https://github.com/$ATMO_REPO/atmosphere.git /opt/dev/atmosphere && \
+    git clone -b $ANSIBLE_BRANCH https://github.com/$ANSIBLE_REPO/atmosphere-ansible.git /opt/dev/atmosphere-ansible && \
+    source /opt/env/atmo/bin/activate && \
+    pip install -r /opt/dev/atmosphere/requirements.txt
 
 # Set permissions on atmosphere
 RUN chown -R www-data:www-data /opt/dev/atmosphere && \
@@ -68,11 +69,11 @@ COPY celerybeat.initd /etc/init.d/celerybeat
 RUN chmod -R 755 /etc/init.d
 
 # Setup uwsgi
-RUN mkdir -p /etc/uwsgi/apps-available
-RUN mkdir -p /etc/uwsgi/apps-enabled
+RUN mkdir -p /etc/uwsgi/apps-available /etc/uwsgi/apps-enabled
 COPY atmosphere.ini /etc/uwsgi/apps-available/
 RUN ln -s /etc/uwsgi/apps-available/atmosphere.ini /etc/uwsgi/apps-enabled/atmosphere.ini
 
+# Cleanup
 RUN apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
