@@ -4,13 +4,13 @@ version: '3'
 services:
 
   postgres:
-    image: postgres:9.6
+    build:
+      context: './postgres'
     environment:
       POSTGRES_USER: 'atmo_app'
       POSTGRES_PASSWORD: 'atmosphere'
       POSTGRES_DB: 'atmo_prod'
-    volumes:
-      - './postgres:/docker-entrypoint-initdb.d'
+      TROPO_DB_NAME: 'troposphere'
 
   atmosphere:
     build:
@@ -20,16 +20,11 @@ services:
         ATMO_BRANCH: 'master'
         ANSIBLE_REPO: 'cyverse'
         ANSIBLE_BRANCH: 'master'
-        CLANK_REPO: 'cyverse'
-        CLANK_BRANCH: 'master'
     volumes:
-      - 'atmo-env:/opt/env/atmo:rw'
-      - 'sockets:/tmp:rw'
       - 'guacamole-keys:/etc/guacamole/keys:rw'
-      - './logs/celery/atmo:/var/log/celery:rw'
+      - './logs/celery:/var/log/celery:rw'
       - './logs/atmosphere:/opt/dev/atmosphere/logs:rw'
-      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
-    env_file: 'options.env'
+    env_file: 'secrets.env'
     depends_on:
       - 'postgres'
 
@@ -39,32 +34,11 @@ services:
       args:
         TROPO_REPO: 'cyverse'
         TROPO_BRANCH: 'master'
-        CLANK_REPO: 'cyverse'
-        CLANK_BRANCH: 'master'
     volumes:
-      - 'atmo-env:/opt/env/atmo:rw'
-      - 'sockets:/tmp:rw'
-      - 'tropo:/opt/dev/troposphere:rw'
       - './logs/troposphere:/opt/dev/troposphere/logs:rw'
-      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
-    env_file: 'options.env'
+    env_file: 'secrets.env'
     depends_on:
       - 'atmosphere'
-
-  nginx:
-    build:
-      context: './nginx'
-      args:
-        CLANK_REPO: 'cyverse'
-        CLANK_BRANCH: 'master'
-    volumes:
-      - 'sockets:/tmp'
-      - 'tropo:/opt/dev/troposphere:rw'
-      - './logs/nginx:/var/log/nginx:rw'
-      - './atmo-local/clank_init:/opt/dev/clank_workspace/clank_init:ro'
-    depends_on:
-      - 'atmosphere'
-      - 'troposphere'
     ports:
       - '443:443'
       - '80:80'
@@ -84,7 +58,4 @@ services:
     image: 'guacamole/guacd:0.9.14'
 
 volumes:
-  atmo-env:
-  sockets:
-  tropo:
   guacamole-keys:
