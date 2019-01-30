@@ -6,6 +6,8 @@ Entire Atmosphere development environment in Docker Containers using Docker-Comp
 
 **Also, take a look at the open issues to see what you can expect to go wrong**
 
+For development purposes, use [atmosphere-docker-dev](https://github.com/cyverse/atmosphere-docker-dev).
+
 
 ## Getting started
 1. `docker-compose build` to build all containers. This step will take a while the first time it is run, but will be quicker after that
