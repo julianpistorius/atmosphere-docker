@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 
 
 ---
+## [PR #10: No more Clank](https://github.com/cyverse/atmosphere-docker/pull/10) - 2019-01-30
+### Added
+- Configuration files during build so they are not created by Clank
+
+### Changed
+- Moved lots of Clank tasks into entrypoiny script
+- Uses `atmosphere-docker-secrets` repository for secrets instead of the usual Clank secrets repos
+
+### Removed
+- Clank!
+
+
+---
 ## [PR #8: Allow changing Clank remote and branch during build](https://github.com/cyverse/atmosphere-docker/pull/8) - 2018-06-18
 ### Added
 None.
